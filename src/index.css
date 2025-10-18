@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+:root {
+  --tw-bg-opacity: 1;
+  --yellow: #fffacd;
+  --yellow-dark: #f0e68c;
+  --green: #c1e1c1;
+  --green-dark: #90ee90;
+  --red: #f4a896;
+  --red-dark: #fa8072;
+  --blue: #a9d2f1;
+  --blue-dark: #87ceeb;
+}

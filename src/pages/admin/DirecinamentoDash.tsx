@@ -1,8 +1,8 @@
 import { LogOut } from "lucide-react";
-import SeletorDeDias from "../components/SeletorDeDias";
+import SeletorDeDias from "../../components/SeletorDeDias";
 import { useNavigate } from "react-router-dom";
-import SeletorDeSessoes from "../components/SeletorDeSessoes";
-import DirecionamentoAviso from "../components/DirecionamentoAviso";
+import SeletorDeSessoes from "../../components/SeletorDeSessoes";
+import DirecionamentoAviso from "../../components/DirecionamentoAviso";
 
 function DirecinamentoDash() {
   const hoje: Date = new Date();

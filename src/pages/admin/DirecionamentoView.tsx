@@ -1,6 +1,6 @@
 import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import SeletorDeDias from "../components/SeletorDeDias";
+import SeletorDeDias from "../../components/SeletorDeDias";
 
 function DirecionamentoView() {
   const hoje: Date = new Date();

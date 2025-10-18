@@ -5,10 +5,10 @@ import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import Login from "./pages/Login.tsx";
 import Pesquisar from "./pages/Pesquisar.tsx";
-import DirecinamentoDash from "./pages/DirecinamentoDash.tsx";
-import DirecionamentoLista from "./pages/DirecionamentoList.tsx";
-import DirecionamentoView from "./pages/DirecionamentoView.tsx";
-import DirecionamentoForm from "./pages/DirecionamentoForm.tsx";
+import DirecinamentoDash from "./pages/admin/DirecinamentoDash.tsx";
+import DirecionamentoLista from "./pages/admin/DirecionamentoList.tsx";
+import DirecionamentoView from "./pages/admin/DirecionamentoView.tsx";
+import DirecionamentoForm from "./pages/admin/DirecionamentoForm.tsx";
 
 const router = createBrowserRouter([
   {

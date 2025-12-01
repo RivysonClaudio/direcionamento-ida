@@ -1,13 +1,13 @@
 import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import SeletorDeDias from "../../components/SeletorDeDias";
+import SeletorDeDias from "../../../components/SeletorDeDias.tsx";
 
 function DirecionamentoView() {
   const hoje: Date = new Date();
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col gap-3 w-screen h-screen p-2 bg-(--yellow)">
+    <div className="flex flex-col gap-3 w-screen h-dvh p-2 bg-(--yellow)">
       <div className="relative py-1 flex items-center justify-center">
         <ChevronLeft
           onClick={() => navigate("/admin/direcionamento-lista")}

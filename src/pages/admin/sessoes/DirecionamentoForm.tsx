@@ -24,7 +24,7 @@ function DirecionamentoForm() {
   }
 
   return (
-    <div className="flex flex-col gap-3 w-screen h-screen p-2 bg-(--yellow)">
+    <div className="flex flex-col gap-3 w-screen h-dvh p-2 bg-(--yellow)">
       <div className="relative py-1 flex items-center justify-center">
         <ChevronLeft
           onClick={() => navigate("/admin/direcionamento")}

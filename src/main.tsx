@@ -1,14 +1,18 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
+import "./util/interceptor.ts";
 
 import { createBrowserRouter, RouterProvider } from "react-router";
-import Login from "./pages/Login.tsx";
-import Pesquisar from "./pages/Pesquisar.tsx";
-import DirecinamentoDash from "./pages/admin/DirecinamentoDash.tsx";
-import DirecionamentoLista from "./pages/admin/DirecionamentoList.tsx";
-import DirecionamentoView from "./pages/admin/DirecionamentoView.tsx";
-import DirecionamentoForm from "./pages/admin/DirecionamentoForm.tsx";
+import Login from "./pages/auth/Login.tsx";
+import Pesquisar from "./util/Pesquisar.tsx";
+import Home from "./pages/admin/home/Home.tsx";
+import SessaoResumo from "./pages/admin/sessoes/SessaoResumo.tsx";
+import DirecionamentoForm from "./pages/admin/sessoes/DirecionamentoForm.tsx";
+import AssistidoList from "./pages/admin/assistidos/AssistidoList.tsx";
+import AssistidoForm from "./pages/admin/assistidos/AssistidoForm.tsx";
+import ProfissionalList from "./pages/admin/profissionais/ProfissionalList.tsx";
+import Agenda from "./pages/admin/agendas/Agenda.tsx";
+import NotificacaoGlobal from "./components/NotificacaoGlobal.tsx";
 
 const router = createBrowserRouter([
   {
@@ -21,28 +25,41 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <DirecinamentoDash />,
+    element: <Home />,
   },
   {
-    path: "/admin/direcionamento",
-    element: <DirecionamentoView />,
+    path: "/admin/sessoes",
+    element: <SessaoResumo />,
   },
   {
-    path: "/admin/direcionamento-lista",
-    element: <DirecionamentoLista />,
-  },
-  {
-    path: "/admin/direcionar",
+    path: "/admin/sessoes/:id",
     element: <DirecionamentoForm />,
   },
   {
-    path: "/admin/direcionar/pesquisar",
+    path: "/admin/pesquisar",
     element: <Pesquisar />,
+  },
+  {
+    path: "admin/assistidos",
+    element: <AssistidoList />,
+  },
+  {
+    path: "admin/assistidos/:id",
+    element: <AssistidoForm />,
+  },
+  {
+    path: "admin/assistidos/agenda/:id",
+    element: <Agenda />,
+  },
+  {
+    path: "admin/profissionais",
+    element: <ProfissionalList />,
   },
 ]);
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+  <>
+    <NotificacaoGlobal />
     <RouterProvider router={router} />
-  </StrictMode>
+  </>
 );

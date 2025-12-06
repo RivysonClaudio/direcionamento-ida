@@ -1,21 +1,43 @@
 import type { IAgenda } from "./IAgenda.tsx";
+import { Clock } from "lucide-react";
 
-function AgendaCard({ agenda }: { agenda: IAgenda }) {
+function AgendaCard({
+  agenda,
+  onClick,
+}: {
+  agenda: IAgenda;
+  onClick?: () => void;
+}) {
   return (
-    <li className="grid grid-cols-4 gap-2 text-center bg-(--blue) rounded-md p-2">
-      <p className="col-span-4 text-center rounded-md shadow pt-1 font-semibold text-neutral-600">
-        {agenda.horario}
-      </p>
-      <h3 className="col-span-1 text-sm text-start">Terapia:</h3>
-      <div className="col-span-3 w-full overflow-x-auto">
-        <h3 className="text-sm text-end pr-2 text-nowrap">{agenda.terapia}</h3>
+    <li
+      id={agenda.id}
+      onClick={onClick}
+      className="rounded-lg p-3 bg-(--blue) border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex flex-col items-center gap-1 min-w-[50px]">
+          <Clock size={16} className="text-neutral-500" />
+          <span className="font-semibold text-sm text-neutral-800">
+            {agenda.horario}
+          </span>
+        </div>
+
+        <div className="flex-1 flex flex-col gap-1 min-w-0">
+          <p className="text-sm font-semibold text-neutral-800">
+            {agenda.terapia}
+          </p>
+          <div className="flex flex-col gap-0.5 text-xs text-neutral-600">
+            <span>
+              <span className="font-medium">Prof:</span> {agenda.profissional}
+            </span>
+            {agenda.apoio && (
+              <span>
+                <span className="font-medium">Apoio:</span> {agenda.apoio}
+              </span>
+            )}
+          </div>
+        </div>
       </div>
-      <h3 className="col-span-1 text-sm text-start">Profissional:</h3>
-      <h3 className="col-span-3 text-sm text-end">{agenda.profissional}</h3>
-      <h3 className="col-span-1 text-sm text-start">Apoio:</h3>
-      <h3 className="col-span-3 text-sm text-end">
-        {agenda.apoio ? agenda.apoio : "--"}
-      </h3>
     </li>
   );
 }

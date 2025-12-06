@@ -1,20 +1,12 @@
-import { useNavigate } from "react-router-dom";
+import { AlertCircle } from "lucide-react";
 
 function DirecionamentoAviso() {
-  const navigate = useNavigate();
-
   return (
-    <div className="p-3 rounded-md shadow-neutral-500 shadow-md bg-(--red)">
-      <div className="flex items-center justify-center gap-2 p-2 pb-3">
-        <div className="w-5 h-5 rounded-full bg-red-500 border-4 border-red-400"></div>
-        <p>1 Direcionamento pendente</p>
-      </div>
-      <button
-        onClick={() => navigate("/admin/direcionamento-lista")}
-        className="w-full p-2 rounded-md bg-red-400"
-      >
-        Direcionar
-      </button>
+    <div className="flex items-center justify-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+      <AlertCircle size={20} className="text-red-500" />
+      <h2 className="text-sm font-medium text-red-700">
+        1 Direcionamento pendente
+      </h2>
     </div>
   );
 }

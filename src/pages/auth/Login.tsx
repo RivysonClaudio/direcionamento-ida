@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import DatabaseService from "../../services/database/DatabaseService";
+import Util from "../../util/util";
 
 function Login() {
   const navigate = useNavigate();
@@ -15,6 +16,8 @@ function Login() {
     import.meta.env.VITE_SUPABASE_URL,
     import.meta.env.VITE_SUPABASE_KEY
   );
+
+  const inputRef = useRef(null);
 
   async function handleLogin(e: FormEvent) {
     e.preventDefault();
@@ -70,6 +73,8 @@ function Login() {
           onChange={(e) => setEmail(e.target.value)}
           required
           className="w-full px-2 py-2.5 bg-neutral-100 rounded-md text-center outline-none"
+          ref={inputRef}
+          onFocus={() => Util.handleFocus(inputRef)}
         />
         <input
           type="password"
@@ -78,6 +83,8 @@ function Login() {
           onChange={(e) => setPassword(e.target.value)}
           required
           className="w-full px-2 py-2.5 bg-neutral-100 rounded-md text-center outline-none"
+          ref={inputRef}
+          onFocus={() => Util.handleFocus(inputRef)}
         />
         {error && <p className="text-sm text-red-500">{error}</p>}
         <button

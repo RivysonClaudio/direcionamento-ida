@@ -1,10 +1,11 @@
-import { ChevronLeft } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChevronLeft, Save } from "lucide-react";
+import { Fragment, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { IAssistido } from "./IAssistido";
 import DatabaseService from "../../../services/database/DatabaseService";
 import { mostrarNotificacao } from "../../../util/notificacao";
 import SeletorDeBotoes from "../../../components/SeletorDeBotoes";
+import type { IAgenda } from "../agendas/IAgenda";
 
 function AssistidoForm() {
   const navigate = useNavigate();
@@ -13,10 +14,24 @@ function AssistidoForm() {
 
   const [assistido, setAssistido] = useState<IAssistido | null>(null);
 
+  const [agendaResumo, setAgendaResumo] = useState<IAgenda[]>([]);
+
   const status_options = ["ATIVO", "INATIVO"];
   const turno_options = ["MANHA", "TARDE"];
   const nivel_suporte_options = ["I", "II", "III"];
   const precisa_apoio_options = ["SIM", "NAO"];
+  const dias_da_semana = [2, 3, 4, 5, 6];
+  const dias_da_semana_nomes: Record<number, string> = {
+    2: "Seg",
+    3: "Ter",
+    4: "Qua",
+    5: "Qui",
+    6: "Sex",
+  };
+  const turnos_horarios = {
+    MANHA: ["08:15", "09:00", "09:45", "10:30", "11:15", "12:00", "12:45"],
+    TARDE: ["13:15", "14:00", "14:45", "15:30", "16:15", "17:00", "17:45"],
+  };
 
   const [assistidoModified, setAssistidoModified] = useState(false);
 
@@ -29,21 +44,66 @@ function AssistidoForm() {
         setAssistido(data);
       })
       .catch((err) => console.error(err));
+
+    database
+      .get_agenda_by_id("patient_id", id!)
+      .then((data) => {
+        setAgendaResumo(data);
+      })
+      .catch((err) => console.error(err));
   }, [id]);
 
+  const handleSave = async () => {
+    if (!assistido) return;
+
+    await database
+      .update_assistido(assistido)
+      .then(() => {
+        setAssistidoModified(false);
+        mostrarNotificacao("Assistido atualizado com sucesso!", "success");
+      })
+      .catch((err) => {
+        console.error(err);
+        mostrarNotificacao("Erro ao atualizar assistido.", "error");
+      });
+  };
+
   return (
-    <div className="flex flex-col gap-3 w-screen h-dvh p-2 bg-(--yellow)">
-      <div className="relative py-1 flex items-center justify-center">
-        <ChevronLeft
+    <div className="flex flex-col gap-3 w-screen h-dvh p-4 bg-(--yellow)">
+      <div className="relative py-2 flex items-center justify-center">
+        <button
           onClick={() => navigate("/admin/assistidos")}
-          className="absolute top-0 left-0 text-neutral-600 h-full"
-        />
-        <h2 className="text-center">Assistido</h2>
+          className="absolute top-0 left-0 p-2 text-neutral-600 hover:text-neutral-800 transition-colors"
+          title="Voltar"
+        >
+          <ChevronLeft size={24} />
+        </button>
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-neutral-800">Assistido</h2>
+          {assistido?.nome && (
+            <p className="text-sm text-neutral-600">{assistido.nome}</p>
+          )}
+        </div>
+        <button
+          disabled={!assistidoModified}
+          onClick={handleSave}
+          className={`absolute top-0 right-0 p-2 transition-colors ${
+            assistidoModified
+              ? "text-green-600 hover:text-green-700"
+              : "text-gray-400"
+          }`}
+          title="Salvar"
+        >
+          <Save size={24} />
+        </button>
       </div>
-      <div className="h-full p-2 flex flex-col gap-4 bg-(--yellow) rounded-md">
+      <div className="h-full p-3 flex flex-col gap-4 bg-white rounded-lg border border-gray-200 shadow-sm overflow-auto">
         <form action="javascript:void(0)" className="flex flex-col gap-4">
-          <div className="flex flex-col">
-            <label htmlFor="nome" className="font-medium text-neutral-400">
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor="nome"
+              className="text-sm font-medium text-neutral-600"
+            >
               Nome
             </label>
             <input
@@ -51,7 +111,7 @@ function AssistidoForm() {
               id="nome"
               name="nome"
               autoComplete="off"
-              className="p-1 rounded-md border border-gray-300 bg-white text-center"
+              className="p-2.5 rounded-lg border border-gray-300 bg-white text-neutral-700 outline-none focus:border-gray-400 transition-colors"
               value={assistido?.nome}
               onChange={(e) => {
                 setAssistido({
@@ -62,16 +122,19 @@ function AssistidoForm() {
               }}
             />
           </div>
-          <div className="flex flex-col">
-            <label htmlFor="idade" className="font-medium text-neutral-400">
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor="idade"
+              className="text-sm font-medium text-neutral-600"
+            >
               Idade
             </label>
             <input
-              type="text"
+              type="number"
               id="idade"
               name="idade"
               autoComplete="off"
-              className="p-1 rounded-md border border-gray-300 bg-white text-center"
+              className="p-2.5 rounded-lg border border-gray-300 bg-white text-neutral-700 outline-none focus:border-gray-400 transition-colors"
               value={assistido?.idade}
               onChange={(e) => {
                 setAssistido({
@@ -122,35 +185,56 @@ function AssistidoForm() {
             }}
           />
         </form>
-      </div>
-      <div>
-        <button
-          disabled={!assistidoModified}
-          className={`w-full flex py-2 justify-center items-center rounded-md ${
-            assistidoModified
-              ? "bg-(--green) text-neutral-900"
-              : "bg-gray-200 text-gray-400"
-          }`}
-          onClick={async () => {
-            if (assistido) {
-              await database
-                .update_assistido(assistido)
-                .then(() => {
-                  setAssistidoModified(false);
-                  mostrarNotificacao(
-                    "Assistido atualizado com sucesso!",
-                    "success"
-                  );
-                })
-                .catch((err) => {
-                  console.error(err);
-                  mostrarNotificacao("Erro ao atualizar assistido.", "error");
-                });
-            }
-          }}
-        >
-          Salvar
-        </button>
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium text-neutral-600">
+            Resumo da Agenda
+          </label>
+          {assistido?.turno ? (
+            <div
+              onClick={() => {
+                navigate(`/admin/assistidos/${assistido?.id}/agenda`);
+              }}
+              className="cursor-pointer p-2 bg-gray-50 rounded-lg border border-gray-300 hover:border-gray-400 transition-colors"
+            >
+              <ul className="grid grid-cols-5 gap-1 text-center text-xs">
+                {dias_da_semana.map((dia, index) => (
+                  <li
+                    key={index}
+                    className="font-semibold text-neutral-700 bg-yellow-100 p-2 rounded"
+                  >
+                    {dias_da_semana_nomes[dia]}
+                  </li>
+                ))}
+                {turnos_horarios[assistido.turno as "MANHA" | "TARDE"].map(
+                  (horario, index) => (
+                    <Fragment key={index}>
+                      {dias_da_semana.map((_, diaIndex) => (
+                        <li
+                          key={`${index}-${diaIndex}`}
+                          className={`${
+                            agendaResumo.some(
+                              (agenda: IAgenda) =>
+                                agenda.horario === horario &&
+                                agenda.dia_semana === dias_da_semana[diaIndex]
+                            )
+                              ? "bg-(--blue) text-white font-semibold"
+                              : "bg-gray-200 text-neutral-500"
+                          } p-2 rounded`}
+                        >
+                          {horario}
+                        </li>
+                      ))}
+                    </Fragment>
+                  )
+                )}
+              </ul>
+            </div>
+          ) : (
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-300 text-center text-neutral-400">
+              Carregando agenda...
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

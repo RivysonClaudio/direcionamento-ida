@@ -12,13 +12,31 @@ function ProfissionalList() {
   const database = new DatabaseService();
   const [profissionais, setProfissionais] = useState<IProfissional[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filter, setFilter] = useState({
+    status: "ATIVO",
+    shift: "",
+    function: "",
+  });
+  const [tempFilter, setTempFilter] = useState({
+    status: "ATIVO",
+    shift: "",
+    function: "",
+  });
+  const [isFunctionDialogOpen, setIsFunctionDialogOpen] = useState(false);
+
+  const function_options = [
+    "Todas",
+    "Aplicador - ABA",
+    "Aux. Coord. - ABA",
+    "Coordenador - ABA",
+  ];
 
   useEffect(() => {
     database
-      .get_profissionais()
+      .get_profissionais("", filter)
       .then((data) => setProfissionais(data))
       .catch((err) => console.error(err));
-  }, []);
+  }, [filter]);
 
   return (
     <div className="flex flex-col gap-3 w-screen h-dvh p-4 bg-(--yellow)">
@@ -37,9 +55,7 @@ function ProfissionalList() {
           </p>
         </div>
         <button
-          onClick={() => {
-            mostrarNotificacao("Funcionalidade em desenvolvimento.", "info");
-          }}
+          onClick={() => navigate("/admin/profissionais/novo")}
           className="absolute top-0 right-0 p-2 text-neutral-600 hover:text-green-600 transition-colors"
           title="Novo Profissional"
         >
@@ -69,7 +85,10 @@ function ProfissionalList() {
           />
         </div>
         <button
-          onClick={() => setIsFilterOpen(true)}
+          onClick={() => {
+            setTempFilter(filter);
+            setIsFilterOpen(true);
+          }}
           className="p-2.5 bg-white rounded-lg border border-gray-300 text-neutral-600 hover:text-neutral-800 hover:border-gray-400 transition-colors"
           title="Filtrar"
         >
@@ -104,13 +123,38 @@ function ProfissionalList() {
               Status
             </label>
             <div className="flex gap-2">
-              <button className="flex-1 py-2 px-4 rounded-lg border border-gray-300 text-sm hover:bg-gray-50">
+              <button
+                onClick={() => setTempFilter({ ...tempFilter, status: "" })}
+                className={`flex-1 py-2 px-4 rounded-lg border text-sm transition-colors ${
+                  tempFilter.status === ""
+                    ? "bg-blue-500 border-blue-500 text-white"
+                    : "border-gray-300 hover:bg-gray-50"
+                }`}
+              >
                 Todos
               </button>
-              <button className="flex-1 py-2 px-4 rounded-lg border border-gray-300 text-sm hover:bg-gray-50">
+              <button
+                onClick={() =>
+                  setTempFilter({ ...tempFilter, status: "ATIVO" })
+                }
+                className={`flex-1 py-2 px-4 rounded-lg border text-sm transition-colors ${
+                  tempFilter.status === "ATIVO"
+                    ? "bg-blue-500 border-blue-500 text-white"
+                    : "border-gray-300 hover:bg-gray-50"
+                }`}
+              >
                 Ativo
               </button>
-              <button className="flex-1 py-2 px-4 rounded-lg border border-gray-300 text-sm hover:bg-gray-50">
+              <button
+                onClick={() =>
+                  setTempFilter({ ...tempFilter, status: "INATIVO" })
+                }
+                className={`flex-1 py-2 px-4 rounded-lg border text-sm transition-colors ${
+                  tempFilter.status === "INATIVO"
+                    ? "bg-blue-500 border-blue-500 text-white"
+                    : "border-gray-300 hover:bg-gray-50"
+                }`}
+              >
                 Inativo
               </button>
             </div>
@@ -118,35 +162,110 @@ function ProfissionalList() {
 
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-neutral-700">
-              Função
+              Funções
             </label>
-            <div className="flex gap-2 flex-wrap">
-              <button className="flex-1 py-2 px-4 rounded-lg border border-gray-300 text-sm hover:bg-gray-50">
-                Todas
+            <button
+              type="button"
+              onClick={() => setIsFunctionDialogOpen(true)}
+              className="p-2.5 rounded-lg border border-gray-300 bg-white text-neutral-700 outline-none hover:border-gray-400 transition-colors text-left"
+            >
+              {tempFilter.function || "Todas"}
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-neutral-700">
+              Turno
+            </label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setTempFilter({ ...tempFilter, shift: "" })}
+                className={`flex-1 py-2 px-4 rounded-lg border text-sm transition-colors ${
+                  tempFilter.shift === ""
+                    ? "bg-blue-500 border-blue-500 text-white"
+                    : "border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                Todos
               </button>
-              <button className="flex-1 py-2 px-4 rounded-lg border border-gray-300 text-sm hover:bg-gray-50">
-                Terapeuta
+              <button
+                onClick={() => setTempFilter({ ...tempFilter, shift: "MANHÃ" })}
+                className={`flex-1 py-2 px-4 rounded-lg border text-sm transition-colors ${
+                  tempFilter.shift === "MANHÃ"
+                    ? "bg-blue-500 border-blue-500 text-white"
+                    : "border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                Manhã
               </button>
-              <button className="flex-1 py-2 px-4 rounded-lg border border-gray-300 text-sm hover:bg-gray-50">
-                Psicólogo
+              <button
+                onClick={() => setTempFilter({ ...tempFilter, shift: "TARDE" })}
+                className={`flex-1 py-2 px-4 rounded-lg border text-sm transition-colors ${
+                  tempFilter.shift === "TARDE"
+                    ? "bg-blue-500 border-blue-500 text-white"
+                    : "border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                Tarde
               </button>
             </div>
           </div>
 
           <div className="flex gap-2 pt-4">
             <button
-              onClick={() => setIsFilterOpen(false)}
+              onClick={() => {
+                const defaultFilter = {
+                  status: "ATIVO",
+                  shift: "",
+                  function: "",
+                };
+                setTempFilter(defaultFilter);
+                setFilter(defaultFilter);
+                setIsFilterOpen(false);
+              }}
               className="flex-1 py-3 rounded-lg bg-gray-200 text-neutral-700 font-medium hover:bg-gray-300 transition-colors"
             >
               Limpar
             </button>
             <button
-              onClick={() => setIsFilterOpen(false)}
+              onClick={() => {
+                setFilter(tempFilter);
+                setIsFilterOpen(false);
+              }}
               className="flex-1 py-3 rounded-lg bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors"
             >
               Aplicar
             </button>
           </div>
+        </div>
+      </BottomDialog>
+
+      <BottomDialog
+        isOpen={isFunctionDialogOpen}
+        onClose={() => setIsFunctionDialogOpen(false)}
+        title="Selecione a Função"
+      >
+        <div className="flex flex-col gap-2">
+          {function_options.map((funcao) => (
+            <button
+              key={funcao}
+              onClick={() => {
+                setTempFilter({
+                  ...tempFilter,
+                  function: funcao === "Todas" ? "" : funcao,
+                });
+                setIsFunctionDialogOpen(false);
+              }}
+              className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
+                (tempFilter.function === "" && funcao === "Todas") ||
+                tempFilter.function === funcao
+                  ? "bg-blue-500 border-blue-500 text-white"
+                  : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+              }`}
+            >
+              {funcao}
+            </button>
+          ))}
         </div>
       </BottomDialog>
     </div>

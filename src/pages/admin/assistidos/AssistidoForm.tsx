@@ -38,34 +38,65 @@ function AssistidoForm() {
   const database = new DatabaseService();
 
   useEffect(() => {
-    database
-      .get_assistido_by_id(id!)
-      .then((data) => {
-        setAssistido(data);
-      })
-      .catch((err) => console.error(err));
+    if (id === "novo") {
+      setAssistido({
+        id: "",
+        nome: "",
+        idade: null,
+        status: "ATIVO",
+        turno: null,
+        nivel_suporte: null,
+        precisa_apoio: null,
+      } as IAssistido);
+    } else {
+      database
+        .get_assistido_by_id(id!)
+        .then((data) => {
+          setAssistido(data);
+        })
+        .catch((err) => console.error(err));
 
-    database
-      .get_agenda_by_id("patient_id", id!)
-      .then((data) => {
-        setAgendaResumo(data);
-      })
-      .catch((err) => console.error(err));
+      database
+        .get_agenda_by_id("patient_id", id!)
+        .then((data) => {
+          setAgendaResumo(data);
+        })
+        .catch((err) => console.error(err));
+    }
   }, [id]);
 
   const handleSave = async () => {
     if (!assistido) return;
 
-    await database
-      .update_assistido(assistido)
-      .then(() => {
-        setAssistidoModified(false);
-        mostrarNotificacao("Assistido atualizado com sucesso!", "success");
-      })
-      .catch((err) => {
-        console.error(err);
-        mostrarNotificacao("Erro ao atualizar assistido.", "error");
-      });
+    if (id === "novo") {
+      if (assistido.nome.trim() === "") {
+        mostrarNotificacao("O nome do assistido é obrigatório.", "error");
+        return;
+      }
+
+      await database
+        .create_assistido(assistido)
+        .then(() => {
+          setAssistidoModified(false);
+          mostrarNotificacao("Assistido cadastrado com sucesso!", "success");
+          navigate("/admin/assistidos");
+        })
+        .catch((err) => {
+          console.error(err);
+          mostrarNotificacao("Erro ao cadastrar assistido.", "error");
+        });
+    } else {
+      await database
+        .update_assistido(assistido)
+        .then(() => {
+          setAssistidoModified(false);
+          mostrarNotificacao("Assistido atualizado com sucesso!", "success");
+        })
+        .catch((err) => {
+          console.error(err);
+          mostrarNotificacao("Erro ao atualizar assistido.", "error");
+        });
+    }
   };
 
   return (
@@ -79,8 +110,10 @@ function AssistidoForm() {
           <ChevronLeft size={24} />
         </button>
         <div className="text-center">
-          <h2 className="text-xl font-bold text-neutral-800">Assistido</h2>
-          {assistido?.nome && (
+          <h2 className="text-xl font-bold text-neutral-800">
+            {id === "novo" ? "Novo Assistido" : "Assistido"}
+          </h2>
+          {assistido?.nome && id !== "novo" && (
             <p className="text-sm text-neutral-600">{assistido.nome}</p>
           )}
         </div>
@@ -135,7 +168,7 @@ function AssistidoForm() {
               name="idade"
               autoComplete="off"
               className="p-2.5 rounded-lg border border-gray-300 bg-white text-neutral-700 outline-none focus:border-gray-400 transition-colors"
-              value={assistido?.idade}
+              value={assistido?.idade ?? ""}
               onChange={(e) => {
                 setAssistido({
                   ...assistido,
@@ -192,6 +225,11 @@ function AssistidoForm() {
           {assistido?.turno ? (
             <div
               onClick={() => {
+                if (assistido?.id == null || assistido.id === "")
+                  return mostrarNotificacao(
+                    "É necessário salvar o assistido antes de acessar a agenda.",
+                    "error"
+                  );
                 navigate(`/admin/assistidos/${assistido?.id}/agenda`);
               }}
               className="cursor-pointer p-2 bg-gray-50 rounded-lg border border-gray-300 hover:border-gray-400 transition-colors"

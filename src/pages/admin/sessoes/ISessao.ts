@@ -14,4 +14,5 @@ export interface ISessao {
   apoio_situacao?: string;
   apoio_nome?: string;
   observacoes?: string;
+  origem?: string;
 }

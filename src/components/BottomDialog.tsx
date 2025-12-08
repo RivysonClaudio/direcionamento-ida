@@ -38,7 +38,7 @@ function BottomDialog({ isOpen, onClose, title, children }: BottomDialogProps) {
     >
       <div
         ref={dialogRef}
-        className="w-full max-h-[80vh] bg-white rounded-t-2xl shadow-2xl animate-slide-up overflow-hidden flex flex-col"
+        className="w-full max-h-[90vh] bg-white rounded-t-2xl shadow-2xl animate-slide-up overflow-hidden flex flex-col"
       >
         {/* Handle bar */}
         <div className="flex justify-center pt-3 pb-2">

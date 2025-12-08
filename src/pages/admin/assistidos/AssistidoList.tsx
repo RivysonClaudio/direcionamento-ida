@@ -47,9 +47,7 @@ function AssistidoList() {
           </p>
         </div>
         <button
-          onClick={() => {
-            mostrarNotificacao("Funcionalidade em desenvolvimento.", "info");
-          }}
+          onClick={() => navigate("/admin/assistidos/novo")}
           className="absolute top-0 right-0 p-2 text-neutral-600 hover:text-green-600 transition-colors"
           title="Novo Assistido"
         >

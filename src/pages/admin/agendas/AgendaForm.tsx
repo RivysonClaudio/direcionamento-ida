@@ -1,15 +1,21 @@
-import { ChevronLeft, Save } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChevronLeft, Save, Search, Pin } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { IAgenda } from "./IAgenda";
+import type { IAssistido } from "../assistidos/IAssistido";
+import type { IProfissional } from "../profissionais/IProfissional";
 import DatabaseService from "../../../services/database/DatabaseService";
 import { mostrarNotificacao } from "../../../util/notificacao";
 import BottomDialog from "../../../components/BottomDialog";
+import Util from "../../../util/util";
 
 function AgendaForm() {
   const navigate = useNavigate();
   const { id, agendaId } = useParams<{ id: string; agendaId: string }>();
 
+  const database = new DatabaseService();
+
+  const [allAgendas, setAllAgendas] = useState<IAgenda[]>([]);
   const [agenda, setAgenda] = useState<IAgenda | null>(null);
   const [agendaModified, setAgendaModified] = useState(false);
   const [isProfissionalDialogOpen, setIsProfissionalDialogOpen] =
@@ -20,22 +26,22 @@ function AgendaForm() {
   const [isAssistidoDialogOpen, setIsAssistidoDialogOpen] = useState(false);
   const [isDiaDialogOpen, setIsDiaDialogOpen] = useState(false);
 
-  const horarios_options = [
-    "08:15",
-    "09:00",
-    "09:45",
-    "10:30",
-    "11:15",
-    "12:00",
-    "12:45",
-    "13:15",
-    "14:00",
-    "14:45",
-    "15:30",
-    "16:15",
-    "17:00",
-    "17:45",
-  ];
+  const [assistidos, setAssistidos] = useState<IAssistido[]>([]);
+  const [assistidoSearchTerm, setAssistidoSearchTerm] = useState("");
+  const assistidoSearchInputRef = useRef<HTMLInputElement>(null);
+
+  const [profissionais, setProfissionais] = useState<IProfissional[]>([]);
+  const [profissionalSearchTerm, setProfissionalSearchTerm] = useState("");
+  const profissionalSearchInputRef = useRef<HTMLInputElement>(null);
+
+  const [apoios, setApoios] = useState<IProfissional[]>([]);
+  const [apoioSearchTerm, setApoioSearchTerm] = useState("");
+  const apoioSearchInputRef = useRef<HTMLInputElement>(null);
+
+  const horarios_options = {
+    manha: ["08:15", "09:00", "09:45", "10:30", "11:15", "12:00", "12:45"],
+    tarde: ["13:15", "14:00", "14:45", "15:30", "16:15", "17:00", "17:45"],
+  };
 
   const terapia_options = [
     "ABA - Análise do Comport. Aplic.",
@@ -43,16 +49,42 @@ function AgendaForm() {
   ];
 
   const dias_semana = [
-    { value: 1, label: "Segunda-feira" },
-    { value: 2, label: "Terça-feira" },
-    { value: 3, label: "Quarta-feira" },
-    { value: 4, label: "Quinta-feira" },
-    { value: 5, label: "Sexta-feira" },
+    { value: 2, label: "Segunda-feira" },
+    { value: 3, label: "Terça-feira" },
+    { value: 4, label: "Quarta-feira" },
+    { value: 5, label: "Quinta-feira" },
+    { value: 6, label: "Sexta-feira" },
   ];
 
   useEffect(() => {
-    const database = new DatabaseService();
+    database
+      .get_agenda_by_id("patient_id", id!)
+      .then((data) => setAllAgendas(data))
+      .catch((err) => console.error(err));
+  }, [id]);
 
+  useEffect(() => {
+    database
+      .get_assistidos(assistidoSearchTerm)
+      .then((data) => setAssistidos(data))
+      .catch((err) => console.error(err));
+  }, [assistidoSearchTerm]);
+
+  useEffect(() => {
+    database
+      .get_profissionais(profissionalSearchTerm)
+      .then((data) => setProfissionais(data))
+      .catch((err) => console.error(err));
+  }, [profissionalSearchTerm]);
+
+  useEffect(() => {
+    database
+      .get_profissionais(apoioSearchTerm)
+      .then((data) => setApoios(data))
+      .catch((err) => console.error(err));
+  }, [apoioSearchTerm]);
+
+  useEffect(() => {
     if (agendaId && agendaId !== "nova") {
       database
         .get_agenda_by_id("id", agendaId)
@@ -61,7 +93,6 @@ function AgendaForm() {
         })
         .catch((err) => console.error(err));
     } else {
-      // Nova agenda
       setAgenda({
         id: "",
         assistido_id: id || "",
@@ -75,7 +106,7 @@ function AgendaForm() {
         horario: "",
       });
     }
-  }, [agendaId, id]);
+  }, [agendaId]);
 
   const handleSave = async () => {
     if (!agenda) return;
@@ -84,15 +115,15 @@ function AgendaForm() {
 
     try {
       if (agendaId === "nova") {
-        // TODO: Implement create_agenda method
-        // await database.create_agenda(agenda);
-        mostrarNotificacao("Agenda criada com sucesso!", "success");
-        navigate(`/admin/assistidos/${id}/agenda`);
+        database.create_agenda(agenda).then(() => {
+          mostrarNotificacao("Agenda criada com sucesso!", "success");
+          navigate(`/admin/assistidos/${id}/agenda`);
+        });
       } else {
-        // TODO: Implement update_agenda method
-        // await database.update_agenda(agenda);
-        setAgendaModified(false);
-        mostrarNotificacao("Agenda atualizada com sucesso!", "success");
+        database.update_agenda(agenda).then(() => {
+          setAgendaModified(false);
+          mostrarNotificacao("Agenda atualizada com sucesso!", "success");
+        });
       }
     } catch (err) {
       console.error(err);
@@ -118,12 +149,6 @@ function AgendaForm() {
           <h2 className="text-xl font-bold text-neutral-800">
             {agendaId === "nova" ? "Nova Agenda" : "Editar Agenda"}
           </h2>
-          {agenda?.assistido && agendaId !== "nova" && (
-            <p className="text-sm text-neutral-600">
-              {agenda.assistido} - {getDiaSemanaNome(agenda.dia_semana)}{" "}
-              {agenda.horario}
-            </p>
-          )}
         </div>
         <button
           disabled={!agendaModified && agendaId !== "nova"}
@@ -245,7 +270,7 @@ function AgendaForm() {
               }}
               className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
                 agenda?.dia_semana === dia.value
-                  ? "bg-(--blue) border-blue-300 text-neutral-800"
+                  ? "bg-blue-500 border-blue-500 text-white"
                   : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
               }`}
             >
@@ -271,7 +296,7 @@ function AgendaForm() {
               }}
               className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
                 agenda?.terapia === terapia
-                  ? "bg-(--blue) border-blue-300 text-neutral-800"
+                  ? "bg-blue-500 border-blue-500 text-white"
                   : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
               }`}
             >
@@ -286,24 +311,68 @@ function AgendaForm() {
         onClose={() => setIsHorarioDialogOpen(false)}
         title="Selecione o Horário"
       >
-        <div className="grid grid-cols-3 gap-2 max-h-[400px] overflow-y-auto">
-          {horarios_options.map((horario) => (
-            <button
-              key={horario}
-              onClick={() => {
-                setAgenda({ ...agenda, horario } as IAgenda);
-                setAgendaModified(true);
-                setIsHorarioDialogOpen(false);
-              }}
-              className={`p-3 rounded-lg border text-sm font-medium transition-all ${
-                agenda?.horario === horario
-                  ? "bg-(--blue) border-blue-300 text-neutral-800"
-                  : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
-              }`}
-            >
-              {horario}
-            </button>
-          ))}
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4 max-h-[400px] overflow-y-auto">
+            <div>
+              <h4 className="text-xs font-semibold text-neutral-600 mb-2">
+                Manhã
+              </h4>
+              <div className="grid grid-cols-3 gap-2">
+                {horarios_options.manha.map((horario) => (
+                  <button
+                    key={horario}
+                    onClick={() => {
+                      setAgenda({ ...agenda, horario } as IAgenda);
+                      setAgendaModified(true);
+                      setIsHorarioDialogOpen(false);
+                    }}
+                    className={`p-3 rounded-lg border text-sm font-medium transition-all ${
+                      agenda?.horario === horario
+                        ? "bg-blue-500 border-blue-500 text-white"
+                        : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                    }`}
+                  >
+                    {horario}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-xs font-semibold text-neutral-600 mb-2">
+                Tarde
+              </h4>
+              <div className="grid grid-cols-3 gap-2">
+                {horarios_options.tarde.map((horario) => (
+                  <button
+                    key={horario}
+                    onClick={() => {
+                      setAgenda({ ...agenda, horario } as IAgenda);
+                      setAgendaModified(true);
+                      setIsHorarioDialogOpen(false);
+                    }}
+                    className={`p-3 rounded-lg border text-sm font-medium transition-all ${
+                      agenda?.horario === horario
+                        ? "bg-blue-500 border-blue-500 text-white"
+                        : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                    }`}
+                  >
+                    {horario}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              setAgenda({ ...agenda, horario: "" } as IAgenda);
+              setAgendaModified(true);
+              setIsHorarioDialogOpen(false);
+            }}
+            className="flex-shrink-0 p-3 rounded-lg border border-red-300 bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 transition-all text-center"
+          >
+            Limpar
+          </button>
         </div>
       </BottomDialog>
 
@@ -312,10 +381,73 @@ function AgendaForm() {
         onClose={() => setIsProfissionalDialogOpen(false)}
         title="Selecione o Profissional"
       >
-        <div className="flex flex-col gap-2">
-          <p className="text-sm text-neutral-500 text-center">
-            Lista de profissionais disponíveis
-          </p>
+        <div className="flex flex-col gap-3">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+                size={20}
+              />
+              <input
+                type="text"
+                ref={profissionalSearchInputRef}
+                placeholder="Buscar por nome..."
+                className="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg border border-gray-300 text-neutral-700 outline-none focus:border-gray-400 transition-colors"
+                value={profissionalSearchTerm}
+                onChange={(e) => setProfissionalSearchTerm(e.target.value)}
+                onFocus={() => Util.handleFocus(profissionalSearchInputRef)}
+              />
+            </div>
+          </div>
+          <div
+            className="flex flex-col gap-2 overflow-y-auto"
+            style={{
+              minHeight: profissionais.length <= 3 ? "250px" : "auto",
+              maxHeight: "350px",
+            }}
+          >
+            {profissionais.length > 0 ? (
+              profissionais.map((profissional) => (
+                <button
+                  key={profissional.id}
+                  onClick={() => {
+                    setAgenda({
+                      ...agenda,
+                      profissional_id: profissional.id,
+                      profissional: profissional.nome,
+                    } as IAgenda);
+                    setAgendaModified(true);
+                    setIsProfissionalDialogOpen(false);
+                  }}
+                  className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
+                    agenda?.profissional_id === profissional.id
+                      ? "bg-blue-500 border-blue-500 text-white"
+                      : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                  }`}
+                >
+                  {profissional.nome}
+                </button>
+              ))
+            ) : (
+              <p className="text-sm text-neutral-500 text-center">
+                Nenhum profissional encontrado.
+              </p>
+            )}
+          </div>
+          <button
+            onClick={() => {
+              setAgenda({
+                ...agenda,
+                profissional_id: "",
+                profissional: "",
+              } as IAgenda);
+              setAgendaModified(true);
+              setIsProfissionalDialogOpen(false);
+            }}
+            className="flex-shrink-0 p-3 rounded-lg border border-red-300 bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 transition-all text-center"
+          >
+            Limpar
+          </button>
         </div>
       </BottomDialog>
 
@@ -324,10 +456,73 @@ function AgendaForm() {
         onClose={() => setIsApoioDialogOpen(false)}
         title="Selecione o Apoio"
       >
-        <div className="flex flex-col gap-2">
-          <p className="text-sm text-neutral-500 text-center">
-            Lista de apoios disponíveis
-          </p>
+        <div className="flex flex-col gap-3">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+                size={20}
+              />
+              <input
+                type="text"
+                ref={apoioSearchInputRef}
+                placeholder="Buscar por nome..."
+                className="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg border border-gray-300 text-neutral-700 outline-none focus:border-gray-400 transition-colors"
+                value={apoioSearchTerm}
+                onChange={(e) => setApoioSearchTerm(e.target.value)}
+                onFocus={() => Util.handleFocus(apoioSearchInputRef)}
+              />
+            </div>
+          </div>
+          <div
+            className="flex flex-col gap-2 overflow-y-auto"
+            style={{
+              minHeight: apoios.length <= 3 ? "250px" : "auto",
+              maxHeight: "350px",
+            }}
+          >
+            {apoios.length > 0 ? (
+              apoios.map((apoio) => (
+                <button
+                  key={apoio.id}
+                  onClick={() => {
+                    setAgenda({
+                      ...agenda,
+                      apoio_id: apoio.id,
+                      apoio: apoio.nome,
+                    } as IAgenda);
+                    setAgendaModified(true);
+                    setIsApoioDialogOpen(false);
+                  }}
+                  className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
+                    agenda?.apoio_id === apoio.id
+                      ? "bg-blue-500 border-blue-500 text-white"
+                      : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                  }`}
+                >
+                  {apoio.nome}
+                </button>
+              ))
+            ) : (
+              <p className="text-sm text-neutral-500 text-center">
+                Nenhum apoio encontrado.
+              </p>
+            )}
+          </div>
+          <button
+            onClick={() => {
+              setAgenda({
+                ...agenda,
+                apoio_id: "",
+                apoio: "",
+              } as IAgenda);
+              setAgendaModified(true);
+              setIsApoioDialogOpen(false);
+            }}
+            className="flex-shrink-0 p-3 rounded-lg border border-red-300 bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 transition-all text-center"
+          >
+            Limpar
+          </button>
         </div>
       </BottomDialog>
 
@@ -336,10 +531,68 @@ function AgendaForm() {
         onClose={() => setIsAssistidoDialogOpen(false)}
         title="Selecione o Assistido"
       >
-        <div className="flex flex-col gap-2">
-          <p className="text-sm text-neutral-500 text-center">
-            Lista de assistidos disponíveis
-          </p>
+        <div className="flex flex-col gap-3">
+          <div className="relative">
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+              size={20}
+            />
+            <input
+              type="text"
+              ref={assistidoSearchInputRef}
+              placeholder="Buscar por nome..."
+              className="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg border border-gray-300 text-neutral-700 outline-none focus:border-gray-400 transition-colors"
+              value={assistidoSearchTerm}
+              onChange={(e) => {
+                Util.handleFocus(assistidoSearchInputRef);
+                setAssistidoSearchTerm(e.target.value);
+              }}
+              onFocus={() => Util.handleFocus(assistidoSearchInputRef)}
+            />
+          </div>
+          <div className="flex flex-col gap-2 max-h-[350px] overflow-y-auto">
+            {assistidos.length > 0 ? (
+              assistidos.map((assistido) => (
+                <button
+                  key={assistido.id}
+                  onClick={() => {
+                    setAgenda({
+                      ...agenda,
+                      assistido_id: assistido.id,
+                      assistido: assistido.nome,
+                    } as IAgenda);
+                    setAgendaModified(true);
+                    setIsAssistidoDialogOpen(false);
+                  }}
+                  className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
+                    agenda?.assistido_id === assistido.id
+                      ? "bg-(--blue) border-blue-300 text-neutral-800"
+                      : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                  }`}
+                >
+                  {assistido.nome}
+                </button>
+              ))
+            ) : (
+              <p className="text-sm text-neutral-500 text-center">
+                Nenhum assistido encontrado.
+              </p>
+            )}
+          </div>
+          <button
+            onClick={() => {
+              setAgenda({
+                ...agenda,
+                assistido_id: "",
+                assistido: "",
+              } as IAgenda);
+              setAgendaModified(true);
+              setIsAssistidoDialogOpen(false);
+            }}
+            className="flex-shrink-0 p-3 rounded-lg border border-red-300 bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 transition-all text-center"
+          >
+            Limpar
+          </button>
         </div>
       </BottomDialog>
     </div>

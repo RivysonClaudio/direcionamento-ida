@@ -41,6 +41,7 @@ class DatabaseService {
         nome: item.name,
         turno: item.shift,
         funcao: item.function,
+        role: item.role,
       };
 
       return result;
@@ -108,6 +109,25 @@ class DatabaseService {
     }
   }
 
+  async create_assistido(assistido: IAssistido): Promise<void> {
+    const user = await this.supabase.auth.getUser();
+
+    const query = await this.supabase.from("patients").insert({
+      name: assistido.nome ?? null,
+      status: assistido.status ?? null,
+      age: assistido.idade ?? null,
+      shift: assistido.turno ?? null,
+      support_level: assistido.nivel_suporte ?? null,
+      helper_needed: assistido.precisa_apoio ?? null,
+      created_by: user.data.user?.id || null,
+      updated_by: user.data.user?.id || null,
+    });
+
+    if (query.error) {
+      throw query.error;
+    }
+  }
+
   async update_assistido(assistido: IAssistido): Promise<void> {
     const user = await this.supabase.auth.getUser();
 
@@ -129,24 +149,38 @@ class DatabaseService {
     }
   }
 
-  async get_profissionais(searchTerm: string = ""): Promise<IProfissional[]> {
-    const query = await this.supabase
+  async get_profissionais(
+    searchTerm: string = "",
+    filter: { status?: string; shift?: string; function?: string } = {
+      status: "",
+      shift: "",
+      function: "",
+    }
+  ): Promise<IProfissional[]> {
+    let query = this.supabase
       .from("professionals")
       .select("*")
-      .ilike("name", `%${searchTerm}%`)
-      .order("name", { ascending: true });
+      .ilike("name", `%${searchTerm}%`);
 
-    if (query.error) {
-      throw new Error(`Error fetching profissionais: ${query.error.message}`);
+    if (filter.status) query = query.eq("status", filter.status);
+    if (filter.shift) query = query.eq("shift", filter.shift);
+    if (filter.function) query = query.eq("function", filter.function);
+
+    const result = await query.order("name", { ascending: true });
+
+    if (result.error) {
+      throw new Error(`Error fetching profissionais: ${result.error.message}`);
     } else {
-      const result = query.data.map((item) => ({
+      const data = result.data.map((item) => ({
         id: item.id,
         status: item.status,
         nome: item.name,
         funcao: item.function,
+        turno: item.shift,
+        role: item.role,
       })) as IProfissional[];
 
-      return result;
+      return data;
     }
   }
 
@@ -169,9 +203,28 @@ class DatabaseService {
         nome: item.name,
         turno: item.shift,
         funcao: item.function,
+        role: item.role,
       };
 
       return result;
+    }
+  }
+
+  async create_profissional(profissional: IProfissional): Promise<void> {
+    const user = await this.supabase.auth.getUser();
+
+    const query = await this.supabase.from("professionals").insert({
+      name: profissional.nome ?? null,
+      status: profissional.status ?? null,
+      shift: profissional.turno ?? null,
+      function: profissional.funcao ?? null,
+      role: profissional.role ?? null,
+      created_by: user.data.user?.id || null,
+      updated_by: user.data.user?.id || null,
+    });
+
+    if (query.error) {
+      throw query.error;
     }
   }
 
@@ -244,17 +297,89 @@ class DatabaseService {
     }
   }
 
-  async get_sessoes_by_date(date: string): Promise<ISessao[]> {
-    const query = await this.supabase
-      .from("vw_therapy_sessions")
-      .select("*")
-      .eq("date", date)
-      .order("session_time", { ascending: true });
+  async create_agenda(agenda: IAgenda): Promise<void> {
+    const user = await this.supabase.auth.getUser();
+
+    const query = await this.supabase.from("schedules").insert({
+      patient_id: agenda.assistido_id,
+      professional_id: agenda.profissional_id || null,
+      helper_id: agenda.apoio_id || null,
+      week_day: agenda.dia_semana,
+      session_time: agenda.horario,
+      therapy: agenda.terapia,
+      created_by: user.data.user?.id || null,
+      updated_by: user.data.user?.id || null,
+    });
 
     if (query.error) {
-      throw new Error(`Error fetching sessao: ${query.error.message}`);
+      throw query.error;
+    }
+  }
+
+  async update_agenda(agenda: IAgenda): Promise<void> {
+    const user = await this.supabase.auth.getUser();
+
+    const query = await this.supabase
+      .from("schedules")
+      .update({
+        patient_id: agenda.assistido_id,
+        professional_id: agenda.profissional_id || null,
+        helper_id: agenda.apoio_id || null,
+        week_day: agenda.dia_semana,
+        session_time: agenda.horario,
+        therapy: agenda.terapia,
+        updated_by: user.data.user?.id || null,
+      })
+      .eq("id", agenda.id);
+
+    if (query.error) {
+      throw query.error;
+    }
+  }
+
+  async delete_agenda(id: string): Promise<void> {
+    const query = await this.supabase.from("schedules").delete().eq("id", id);
+
+    if (query.error) {
+      throw query.error;
+    }
+  }
+
+  async get_sessoes_by_date(
+    date: string,
+    filter: {
+      status?: string;
+      patient_id?: string;
+      profissional_id?: string;
+      therapy?: string;
+      session_time?: string;
+    } = {
+      status: "",
+      patient_id: "",
+      profissional_id: "",
+      therapy: "",
+      session_time: "",
+    }
+  ): Promise<ISessao[]> {
+    let query = this.supabase
+      .from("vw_therapy_sessions")
+      .select("*")
+      .eq("date", date);
+
+    if (filter.status) query = query.eq("status", filter.status);
+    if (filter.patient_id) query = query.eq("patient_id", filter.patient_id);
+    if (filter.profissional_id)
+      query = query.eq("professional_id", filter.profissional_id);
+    if (filter.therapy) query = query.eq("therapy", filter.therapy);
+    if (filter.session_time)
+      query = query.eq("session_time", filter.session_time);
+
+    const result = await query.order("session_time", { ascending: true });
+
+    if (result.error) {
+      throw new Error(`Error fetching sessao: ${result.error.message}`);
     } else {
-      const result = query.data.map((item) => ({
+      const data = result.data.map((item) => ({
         id: item.id,
         data: item.date,
         status: item.status,
@@ -269,10 +394,10 @@ class DatabaseService {
         apoio_id: item.helper_id,
         apoio_nome: item.helper_name,
         apoio_situacao: item.helper_status,
-        observacoes: item.observations,
+        observacoes: item.observation,
       })) as ISessao[];
 
-      return result;
+      return data;
     }
   }
 
@@ -337,38 +462,33 @@ class DatabaseService {
         apoio_id: item.helper_id,
         apoio_nome: item.helper_name,
         apoio_situacao: item.helper_status,
-        observacoes: item.observations,
+        observacoes: item.observation,
       };
 
       return result;
     }
   }
 
-  async create_sessao(sessao: ISessao): Promise<string> {
+  async create_sessao(sessao: ISessao): Promise<void> {
     const user = await this.supabase.auth.getUser();
 
-    const query = await this.supabase
-      .from("therapy_sessions")
-      .insert({
-        date: sessao.data,
-        session_time: sessao.horario,
-        therapy: sessao.terapia,
-        patient_id: sessao.assistido_id,
-        professional_id: sessao.profissional_id || null,
-        helper_id: sessao.apoio_id || null,
-        status: sessao.status,
-        observations: sessao.observacoes || null,
-        created_by: user.data.user?.id || null,
-        updated_by: user.data.user?.id || null,
-      })
-      .select("id")
-      .single();
+    const query = await this.supabase.from("therapy_sessions").insert({
+      date: sessao.data,
+      session_time: sessao.horario,
+      therapy: sessao.terapia,
+      patient_id: sessao.assistido_id,
+      professional_id: sessao.profissional_id || null,
+      helper_id: sessao.apoio_id || null,
+      status: sessao.status,
+      observation: sessao.observacoes || null,
+      origin: "MANUAL",
+      created_by: user.data.user?.id || null,
+      updated_by: user.data.user?.id || null,
+    });
 
     if (query.error) {
       throw query.error;
     }
-
-    return query.data.id;
   }
 
   async update_sessao(sessao: ISessao): Promise<void> {
@@ -384,7 +504,7 @@ class DatabaseService {
         professional_id: sessao.profissional_id || null,
         helper_id: sessao.apoio_id || null,
         status: sessao.status,
-        observations: sessao.observacoes || null,
+        observation: sessao.observacoes || null,
         updated_by: user.data.user?.id || null,
       })
       .eq("id", sessao.id);
@@ -427,6 +547,63 @@ class DatabaseService {
     }
 
     return data as number;
+  }
+
+  async get_assistidos_disponiveis(
+    date: string,
+    session_time: string,
+    searchTerm: string = ""
+  ): Promise<IAssistido[]> {
+    const { data, error } = await this.supabase.rpc("get_available_patients", {
+      p_date: date,
+      p_session_time: session_time,
+      p_search_name: searchTerm,
+    });
+
+    if (error) {
+      throw new Error(
+        `Error fetching assistidos disponíveis: ${error.message}`
+      );
+    }
+
+    return data.map((item) => ({
+      id: item.id,
+      status: item.status,
+      nome: item.name,
+      nivel_suporte: item.support_level,
+      precisa_apoio: item.helper_needed,
+    })) as IAssistido[];
+  }
+
+  async get_profissionais_disponiveis(
+    date: string,
+    session_time: string,
+    patient_id: string | null,
+    searchTerm: string = ""
+  ): Promise<IProfissional[]> {
+    const { data, error } = await this.supabase.rpc(
+      "get_available_professionals",
+      {
+        p_date: date,
+        p_session_time: session_time,
+        p_patient_id: patient_id,
+        p_search_name: searchTerm,
+      }
+    );
+
+    if (error) {
+      throw new Error(
+        `Error fetching profissionais disponíveis: ${error.message}`
+      );
+    }
+
+    return data.map((item) => ({
+      id: item.id,
+      status: item.status,
+      nome: item.name,
+      turno: item.shift,
+      funcao: item.function,
+    })) as IProfissional[];
   }
 }
 

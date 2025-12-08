@@ -56,9 +56,10 @@ function ProfissionalForm() {
       setProfissional({
         id: "",
         nome: "",
-        turno: "",
+        turno: "TARDE",
         funcao: "",
         status: "ATIVO",
+        role: "MEMBER",
       });
     }
   }, [id]);
@@ -66,36 +67,54 @@ function ProfissionalForm() {
   const handleSave = async () => {
     if (!profissional) return;
 
-    await database
-      .update_profissional(profissional)
-      .then(async () => {
-        setProfissionalModified(false);
-        mostrarNotificacao("Profissional atualizado com sucesso!", "success");
-        if (statusChanged && profissional.status === "INATIVO") {
-          database
-            .update_sessions_on_professional_status_change(
-              profissional.id,
-              "2025-12-05"
-            )
-            .then(() => {
-              mostrarNotificacao(
-                "Sessões atualizadas conforme mudança de status.",
-                "success"
-              );
-            })
-            .catch((err) => {
-              console.error(err);
-              mostrarNotificacao(
-                "Erro ao atualizar sessões após mudança de status.",
-                "error"
-              );
-            });
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        mostrarNotificacao("Erro ao atualizar profissional.", "error");
-      });
+    if (id === "novo") {
+      if (profissional.nome.trim() === "") {
+        return mostrarNotificacao("O nome é obrigatório.", "error");
+      }
+
+      await database
+        .create_profissional(profissional)
+        .then(() => {
+          setProfissionalModified(false);
+          mostrarNotificacao("Profissional criado com sucesso!", "success");
+          navigate("/admin/profissionais");
+        })
+        .catch((err) => {
+          console.error(err);
+          mostrarNotificacao("Erro ao criar profissional.", "error");
+        });
+    } else {
+      await database
+        .update_profissional(profissional)
+        .then(async () => {
+          setProfissionalModified(false);
+          mostrarNotificacao("Profissional atualizado com sucesso!", "success");
+          if (statusChanged && profissional.status === "INATIVO") {
+            database
+              .update_sessions_on_professional_status_change(
+                profissional.id,
+                "2025-12-05"
+              )
+              .then(() => {
+                mostrarNotificacao(
+                  "Sessões atualizadas conforme mudança de status.",
+                  "success"
+                );
+              })
+              .catch((err) => {
+                console.error(err);
+                mostrarNotificacao(
+                  "Erro ao atualizar sessões após mudança de status.",
+                  "error"
+                );
+              });
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          mostrarNotificacao("Erro ao atualizar profissional.", "error");
+        });
+    }
   };
 
   return (

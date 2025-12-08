@@ -11,9 +11,13 @@ import { useState } from "react";
 import SessaoCard from "./SessaoCard";
 import DatabaseService from "../../../services/database/DatabaseService";
 import type { ISessao } from "../sessoes/ISessao";
+import type { IAssistido } from "../assistidos/IAssistido";
+import type { IProfissional } from "../profissionais/IProfissional";
 import { useEffect } from "react";
 import Util from "../../../util/util";
 import { mostrarNotificacao } from "../../../util/notificacao";
+import BottomDialog from "../../../components/BottomDialog";
+import { Search } from "lucide-react";
 
 function SessaoList() {
   const navigate = useNavigate();
@@ -21,21 +25,79 @@ function SessaoList() {
   const [sessoes, setSessoes] = useState<ISessao[]>([]);
   const [sessoesPendentes, setSessoesPendentes] = useState<ISessao[]>([]);
   const [selected, setSelected] = useState("HOJE");
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const options = ["ONTEM", "HOJE", "AMANHÃ"];
+  const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
+  const [isHorarioDialogOpen, setIsHorarioDialogOpen] = useState(false);
+  const [isTerapiaDialogOpen, setIsTerapiaDialogOpen] = useState(false);
+  const [isAssistidoDialogOpen, setIsAssistidoDialogOpen] = useState(false);
+  const [assistidos, setAssistidos] = useState<IAssistido[]>([]);
+  const [assistidoSearchTerm, setAssistidoSearchTerm] = useState("");
+  const [isProfissionalDialogOpen, setIsProfissionalDialogOpen] =
+    useState(false);
+  const [profissionais, setProfissionais] = useState<IProfissional[]>([]);
+  const [profissionalSearchTerm, setProfissionalSearchTerm] = useState("");
+  const [selectedAssistidoNome, setSelectedAssistidoNome] = useState("");
+  const [selectedProfissionalNome, setSelectedProfissionalNome] = useState("");
+
+  const horarios_options = {
+    manha: ["08:15", "09:00", "09:45", "10:30", "11:15", "12:00", "12:45"],
+    tarde: ["13:15", "14:00", "14:45", "15:30", "16:15", "17:00", "17:45"],
+  };
+
+  const terapia_options = [
+    "ABA - Análise do Comport. Aplic.",
+    "Outras terapias",
+  ];
+
+  const [filter, setFilter] = useState({
+    status: "",
+    patient_id: "",
+    profissional_id: "",
+    therapy: "",
+    session_time: "",
+  });
+  const [tempFilter, setTempFilter] = useState({
+    status: "",
+    patient_id: "",
+    profissional_id: "",
+    therapy: "",
+    session_time: "",
+  });
 
   useEffect(() => {
     const dayOffset = selected === "ONTEM" ? -1 : selected === "AMANHÃ" ? 1 : 0;
 
-    database.get_sessoes_by_date(Util.iso_date(dayOffset)).then((data) => {
-      setSessoes(data);
+    database
+      .get_sessoes_by_date(Util.iso_date(dayOffset), filter)
+      .then((data) => {
+        setSessoes(data);
 
-      setTimeout(() => {
-        database
-          .get_sessoes_pendentes_by_date(Util.iso_date(dayOffset))
-          .then((data) => setSessoesPendentes(data));
-      }, 300);
-    });
-  }, [selected]);
+        setTimeout(() => {
+          database
+            .get_sessoes_pendentes_by_date(Util.iso_date(dayOffset))
+            .then((data) => setSessoesPendentes(data));
+        }, 300);
+      });
+  }, [selected, refreshTrigger, filter]);
+
+  useEffect(() => {
+    if (isAssistidoDialogOpen) {
+      database
+        .get_assistidos(assistidoSearchTerm)
+        .then((data) => setAssistidos(data))
+        .catch((err) => console.error(err));
+    }
+  }, [isAssistidoDialogOpen, assistidoSearchTerm]);
+
+  useEffect(() => {
+    if (isProfissionalDialogOpen) {
+      database
+        .get_profissionais(profissionalSearchTerm)
+        .then((data) => setProfissionais(data))
+        .catch((err) => console.error(err));
+    }
+  }, [isProfissionalDialogOpen, profissionalSearchTerm]);
 
   return (
     <div className="flex flex-col gap-3 w-screen h-dvh p-4 bg-(--yellow)">
@@ -100,13 +162,14 @@ function SessaoList() {
             database
               .dispatch_generat_sessao_job(
                 Util.iso_date(dayOffset),
-                Util.week_day
+                Util.week_day + dayOffset
               )
               .then((response) => {
                 mostrarNotificacao(
-                  `${response} sessões criada com sucesso.`,
+                  `${response} sessões criada(s) com sucesso.`,
                   "success"
                 );
+                setRefreshTrigger((prev) => prev + 1);
               })
               .catch((err) => {
                 console.error(err);
@@ -118,10 +181,440 @@ function SessaoList() {
           <Calendar size={20} />
           Gerar agenda
         </button>
-        <button className="bg-white border border-gray-300 p-3 text-neutral-600 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors">
+        <button
+          onClick={() => {
+            setTempFilter(filter);
+            setIsFilterDialogOpen(true);
+          }}
+          className={`p-3 rounded-lg border transition-colors ${
+            filter.status ||
+            filter.session_time ||
+            filter.therapy ||
+            filter.patient_id ||
+            filter.profissional_id
+              ? "bg-blue-50 border-blue-500 text-blue-600"
+              : "bg-white border-gray-300 text-neutral-600 hover:bg-gray-50 hover:border-gray-400"
+          }`}
+        >
           <Filter size={20} />
         </button>
       </div>
+
+      <BottomDialog
+        isOpen={isFilterDialogOpen}
+        onClose={() => setIsFilterDialogOpen(false)}
+        title="Filtros"
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-neutral-700">
+              Status
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setTempFilter({ ...tempFilter, status: "" })}
+                className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
+                  tempFilter.status === ""
+                    ? "bg-blue-500 border-blue-500 text-white"
+                    : "border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                Todos
+              </button>
+              <button
+                onClick={() =>
+                  setTempFilter({ ...tempFilter, status: "PENDENTE" })
+                }
+                className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
+                  tempFilter.status === "PENDENTE"
+                    ? "bg-blue-500 border-blue-500 text-white"
+                    : "border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                Pendente
+              </button>
+              <button
+                onClick={() =>
+                  setTempFilter({ ...tempFilter, status: "CONFIRMADO" })
+                }
+                className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
+                  tempFilter.status === "CONFIRMADO"
+                    ? "bg-blue-500 border-blue-500 text-white"
+                    : "border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                Confirmado
+              </button>
+              <button
+                onClick={() =>
+                  setTempFilter({ ...tempFilter, status: "CANCELADO" })
+                }
+                className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
+                  tempFilter.status === "CANCELADO"
+                    ? "bg-blue-500 border-blue-500 text-white"
+                    : "border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                Cancelado
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-neutral-700">
+              Horário
+            </label>
+            <input
+              type="text"
+              readOnly
+              value={tempFilter.session_time || "Todos"}
+              onClick={() => setIsHorarioDialogOpen(true)}
+              className="py-2 px-4 rounded-lg border border-gray-300 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-neutral-700">
+              Terapia
+            </label>
+            <input
+              type="text"
+              readOnly
+              value={tempFilter.therapy || "Todas"}
+              onClick={() => setIsTerapiaDialogOpen(true)}
+              className="py-2 px-4 rounded-lg border border-gray-300 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-neutral-700">
+              Assistido
+            </label>
+            <input
+              type="text"
+              readOnly
+              value={
+                tempFilter.patient_id
+                  ? selectedAssistidoNome || "Selecionado"
+                  : "Todos"
+              }
+              onClick={() => setIsAssistidoDialogOpen(true)}
+              className="py-2 px-4 rounded-lg border border-gray-300 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-neutral-700">
+              Profissional
+            </label>
+            <input
+              type="text"
+              readOnly
+              value={
+                tempFilter.profissional_id
+                  ? selectedProfissionalNome || "Selecionado"
+                  : "Todos"
+              }
+              onClick={() => setIsProfissionalDialogOpen(true)}
+              className="py-2 px-4 rounded-lg border border-gray-300 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+            />
+          </div>
+
+          <div className="flex gap-2 pt-4">
+            <button
+              onClick={() => {
+                const defaultFilter = {
+                  status: "",
+                  patient_id: "",
+                  profissional_id: "",
+                  therapy: "",
+                  session_time: "",
+                };
+                setTempFilter(defaultFilter);
+                setFilter(defaultFilter);
+                setSelectedAssistidoNome("");
+                setSelectedProfissionalNome("");
+                setIsFilterDialogOpen(false);
+              }}
+              className="flex-1 py-3 rounded-lg bg-gray-200 text-neutral-700 font-medium hover:bg-gray-300 transition-colors"
+            >
+              Limpar
+            </button>
+            <button
+              onClick={() => {
+                setFilter(tempFilter);
+                setIsFilterDialogOpen(false);
+              }}
+              className="flex-1 py-3 rounded-lg bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors"
+            >
+              Aplicar
+            </button>
+          </div>
+        </div>
+      </BottomDialog>
+
+      <BottomDialog
+        isOpen={isHorarioDialogOpen}
+        onClose={() => setIsHorarioDialogOpen(false)}
+        title="Selecionar Horário"
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => {
+                setTempFilter({ ...tempFilter, session_time: "" });
+                setIsHorarioDialogOpen(false);
+              }}
+              className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
+                tempFilter.session_time === ""
+                  ? "bg-blue-500 border-blue-500 text-white"
+                  : "border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Todos
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <h3 className="text-sm font-medium text-neutral-700">Manhã</h3>
+            <div className="grid grid-cols-4 gap-2">
+              {horarios_options.manha.map((horario) => (
+                <button
+                  key={horario}
+                  onClick={() => {
+                    setTempFilter({
+                      ...tempFilter,
+                      session_time:
+                        tempFilter.session_time === horario ? "" : horario,
+                    });
+                    setIsHorarioDialogOpen(false);
+                  }}
+                  className={`py-2 px-3 rounded-lg border text-sm transition-colors ${
+                    tempFilter.session_time === horario
+                      ? "bg-blue-500 border-blue-500 text-white"
+                      : "border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  {horario}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <h3 className="text-sm font-medium text-neutral-700">Tarde</h3>
+            <div className="grid grid-cols-4 gap-2">
+              {horarios_options.tarde.map((horario) => (
+                <button
+                  key={horario}
+                  onClick={() => {
+                    setTempFilter({
+                      ...tempFilter,
+                      session_time:
+                        tempFilter.session_time === horario ? "" : horario,
+                    });
+                    setIsHorarioDialogOpen(false);
+                  }}
+                  className={`py-2 px-3 rounded-lg border text-sm transition-colors ${
+                    tempFilter.session_time === horario
+                      ? "bg-blue-500 border-blue-500 text-white"
+                      : "border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  {horario}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </BottomDialog>
+
+      <BottomDialog
+        isOpen={isTerapiaDialogOpen}
+        onClose={() => setIsTerapiaDialogOpen(false)}
+        title="Selecionar Terapia"
+      >
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => {
+              setTempFilter({ ...tempFilter, therapy: "" });
+              setIsTerapiaDialogOpen(false);
+            }}
+            className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
+              tempFilter.therapy === ""
+                ? "bg-blue-500 border-blue-500 text-white"
+                : "border-gray-300 hover:bg-gray-50"
+            }`}
+          >
+            Todas
+          </button>
+          {terapia_options.map((terapia) => (
+            <button
+              key={terapia}
+              onClick={() => {
+                setTempFilter({
+                  ...tempFilter,
+                  therapy: tempFilter.therapy === terapia ? "" : terapia,
+                });
+                setIsTerapiaDialogOpen(false);
+              }}
+              className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
+                tempFilter.therapy === terapia
+                  ? "bg-blue-500 border-blue-500 text-white"
+                  : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+              }`}
+            >
+              {terapia}
+            </button>
+          ))}
+        </div>
+      </BottomDialog>
+
+      <BottomDialog
+        isOpen={isAssistidoDialogOpen}
+        onClose={() => setIsAssistidoDialogOpen(false)}
+        title="Selecionar Assistido"
+      >
+        <div className="flex flex-col gap-3">
+          <div className="relative">
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+              size={20}
+            />
+            <input
+              type="text"
+              placeholder="Buscar por nome..."
+              className="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg border border-gray-300 text-neutral-700 outline-none focus:border-gray-400 transition-colors"
+              value={assistidoSearchTerm}
+              onChange={(e) => setAssistidoSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => {
+                setTempFilter({ ...tempFilter, patient_id: "" });
+                setSelectedAssistidoNome("");
+                setIsAssistidoDialogOpen(false);
+              }}
+              className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
+                tempFilter.patient_id === ""
+                  ? "bg-blue-500 border-blue-500 text-white"
+                  : "border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Todos
+            </button>
+          </div>
+          <div className="flex flex-col gap-2 max-h-[350px] overflow-y-auto">
+            {assistidos.length > 0 ? (
+              assistidos.map((assistido) => (
+                <button
+                  key={assistido.id}
+                  onClick={() => {
+                    setTempFilter({
+                      ...tempFilter,
+                      patient_id:
+                        tempFilter.patient_id === assistido.id
+                          ? ""
+                          : assistido.id,
+                    });
+                    setSelectedAssistidoNome(
+                      tempFilter.patient_id === assistido.id
+                        ? ""
+                        : assistido.nome
+                    );
+                    setIsAssistidoDialogOpen(false);
+                  }}
+                  className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
+                    tempFilter.patient_id === assistido.id
+                      ? "bg-blue-500 border-blue-500 text-white"
+                      : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                  }`}
+                >
+                  {assistido.nome}
+                </button>
+              ))
+            ) : (
+              <p className="text-sm text-neutral-500 text-center">
+                Nenhum assistido encontrado.
+              </p>
+            )}
+          </div>
+        </div>
+      </BottomDialog>
+
+      <BottomDialog
+        isOpen={isProfissionalDialogOpen}
+        onClose={() => setIsProfissionalDialogOpen(false)}
+        title="Selecionar Profissional"
+      >
+        <div className="flex flex-col gap-3">
+          <div className="relative">
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+              size={20}
+            />
+            <input
+              type="text"
+              placeholder="Buscar por nome..."
+              className="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg border border-gray-300 text-neutral-700 outline-none focus:border-gray-400 transition-colors"
+              value={profissionalSearchTerm}
+              onChange={(e) => setProfissionalSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => {
+                setTempFilter({ ...tempFilter, profissional_id: "" });
+                setSelectedProfissionalNome("");
+                setIsProfissionalDialogOpen(false);
+              }}
+              className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
+                tempFilter.profissional_id === ""
+                  ? "bg-blue-500 border-blue-500 text-white"
+                  : "border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Todos
+            </button>
+          </div>
+          <div className="flex flex-col gap-2 max-h-[350px] overflow-y-auto">
+            {profissionais.length > 0 ? (
+              profissionais.map((profissional) => (
+                <button
+                  key={profissional.id}
+                  onClick={() => {
+                    setTempFilter({
+                      ...tempFilter,
+                      profissional_id:
+                        tempFilter.profissional_id === profissional.id
+                          ? ""
+                          : profissional.id,
+                    });
+                    setSelectedProfissionalNome(
+                      tempFilter.profissional_id === profissional.id
+                        ? ""
+                        : profissional.nome
+                    );
+                    setIsProfissionalDialogOpen(false);
+                  }}
+                  className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
+                    tempFilter.profissional_id === profissional.id
+                      ? "bg-blue-500 border-blue-500 text-white"
+                      : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                  }`}
+                >
+                  {profissional.nome}
+                </button>
+              ))
+            ) : (
+              <p className="text-sm text-neutral-500 text-center">
+                Nenhum profissional encontrado.
+              </p>
+            )}
+          </div>
+        </div>
+      </BottomDialog>
     </div>
   );
 }

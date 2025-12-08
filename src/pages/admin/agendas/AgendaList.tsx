@@ -3,9 +3,11 @@ import DatabaseService from "../../../services/database/DatabaseService.ts";
 import { useState, useEffect } from "react";
 import type { IAgenda } from "./IAgenda.tsx";
 import type { IAssistido } from "../assistidos/IAssistido.tsx";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
 import AgendaCard from "./AgendaCard.tsx";
 import Util from "../../../util/util.tsx";
+import BottomDialog from "../../../components/BottomDialog.tsx";
+import { mostrarNotificacao } from "../../../util/notificacao.ts";
 
 function AgendaList() {
   const { id } = useParams<{ id: string; agendaId: string }>();
@@ -14,6 +16,8 @@ function AgendaList() {
   const [assistido, setAssistido] = useState<IAssistido | null>(null);
   const [day, setDay] = useState<number>(2);
   const [agendas, setAgendas] = useState<IAgenda[]>([]);
+  const [isOptionsDialogOpen, setIsOptionsDialogOpen] = useState(false);
+  const [selectedAgenda, setSelectedAgenda] = useState<IAgenda | null>(null);
 
   useEffect(() => {
     if (!id) {
@@ -41,6 +45,22 @@ function AgendaList() {
   function get_session_by_day(day: number): IAgenda[] {
     const sessions = agendas.filter((agenda) => agenda.dia_semana == day);
     return Util.sort_agenda_by_time(sessions) || [];
+  }
+
+  function handleLongPress(agenda: IAgenda) {
+    setSelectedAgenda(agenda);
+    setIsOptionsDialogOpen(true);
+  }
+
+  function handleDeleteAgenda() {
+    if (selectedAgenda) {
+      database.delete_agenda(selectedAgenda.id).then(() => {
+        setAgendas(agendas.filter((a) => a.id !== selectedAgenda.id));
+        setSelectedAgenda(null);
+      });
+      mostrarNotificacao("Agenda excluída com sucesso.", "success");
+    }
+    setIsOptionsDialogOpen(false);
   }
 
   return (
@@ -108,6 +128,7 @@ function AgendaList() {
               onClick={() =>
                 navigate(`/admin/assistidos/${id}/agenda/${agenda.id}`)
               }
+              onLongPress={() => handleLongPress(agenda)}
             />
           ))
         ) : (
@@ -118,6 +139,28 @@ function AgendaList() {
           </div>
         )}
       </ul>
+
+      <BottomDialog
+        isOpen={isOptionsDialogOpen}
+        onClose={() => setIsOptionsDialogOpen(false)}
+        title="Deseja excluir esta agenda?"
+      >
+        <div className="flex gap-2">
+          <button
+            className="flex w-full items-center justify-center gap-3 p-3 rounded-lg border border-neutral-300 bg-neutral-50 text-neutral-700"
+            onClick={() => setIsOptionsDialogOpen(false)}
+          >
+            Cancelar
+          </button>
+          <button
+            className="flex w-full items-center justify-center gap-3 p-3 rounded-lg border border-red-300 bg-red-50 text-red-700 hover:bg-red-100 transition-colors"
+            onClick={handleDeleteAgenda}
+          >
+            <Trash2 size={20} className="text-red-500" />
+            <span className="font-medium">Excluir</span>
+          </button>
+        </div>
+      </BottomDialog>
     </div>
   );
 }

@@ -4,4 +4,5 @@ export interface IProfissional {
   nome: string;
   turno: string;
   funcao: string | null;
+  role: string | null;
 }

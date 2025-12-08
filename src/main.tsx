@@ -15,6 +15,7 @@ import ProfissionalForm from "./pages/admin/profissionais/ProfissionalForm.tsx";
 import SessaoForm from "./pages/admin/sessoes/SessaoForm.tsx";
 import AgendaList from "./pages/admin/agendas/AgendaList.tsx";
 import AgendaForm from "./pages/admin/agendas/AgendaForm.tsx";
+import MemberAgenda from "./pages/member/Agenda.tsx";
 
 const router = createBrowserRouter([
   {
@@ -64,6 +65,10 @@ const router = createBrowserRouter([
   {
     path: "admin/profissionais/:id",
     element: <ProfissionalForm />,
+  },
+  {
+    path: "/member/:id/agenda",
+    element: <MemberAgenda />,
   },
 ]);
 

@@ -1,4 +1,4 @@
-import { ChevronLeft, Save } from "lucide-react";
+import { ChevronLeft, Save, Search, Pin } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { ISessao } from "./ISessao";
@@ -7,22 +7,38 @@ import { mostrarNotificacao } from "../../../util/notificacao";
 import SeletorDeBotoes from "../../../components/SeletorDeBotoes";
 import BottomDialog from "../../../components/BottomDialog";
 import Util from "../../../util/util";
+import type { IAssistido } from "../assistidos/IAssistido";
+import type { IProfissional } from "../profissionais/IProfissional";
 
 function SessaoForm() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
 
+  const database = new DatabaseService();
+
   const [sessao, setSessao] = useState<ISessao | null>(null);
   const [sessaoModified, setSessaoModified] = useState(false);
+  type DataOption = "ONTEM" | "HOJE" | "AMANHÃ";
+  const [dataSelecionada, setDataSelecionada] = useState<DataOption>("HOJE");
+  const [assistidos, setAssistidos] = useState<IAssistido[]>([]);
+  const [profissionais, setProfissionais] = useState<IProfissional[]>([]);
+  const [apoios, setApoios] = useState<IProfissional[]>([]);
   const [isProfissionalDialogOpen, setIsProfissionalDialogOpen] =
     useState(false);
   const [isApoioDialogOpen, setIsApoioDialogOpen] = useState(false);
   const [isHorarioDialogOpen, setIsHorarioDialogOpen] = useState(false);
   const [isTerapiaDialogOpen, setIsTerapiaDialogOpen] = useState(false);
   const [isAssistidoDialogOpen, setIsAssistidoDialogOpen] = useState(false);
+  const [assistidoSearchTerm, setAssistidoSearchTerm] = useState("");
+  const [profissionalSearchTerm, setProfissionalSearchTerm] = useState("");
+  const [apoioSearchTerm, setApoioSearchTerm] = useState("");
+  const [isProfissionalPinned, setIsProfissionalPinned] = useState(true);
+  const [isApoioPinned, setIsApoioPinned] = useState(true);
 
-  const dataInputRef = useRef<HTMLInputElement>(null);
   const observacoesInputRef = useRef<HTMLTextAreaElement>(null);
+  const assistidoSearchInputRef = useRef<HTMLInputElement>(null);
+  const profissionalSearchInputRef = useRef<HTMLInputElement>(null);
+  const apoioSearchInputRef = useRef<HTMLInputElement>(null);
 
   const status_options: Array<"PENDENTE" | "AGENDADO" | "CANCELADO"> = [
     "PENDENTE",
@@ -30,22 +46,10 @@ function SessaoForm() {
     "CANCELADO",
   ];
 
-  const horarios_options = [
-    "08:15",
-    "09:00",
-    "09:45",
-    "10:30",
-    "11:15",
-    "12:00",
-    "12:45",
-    "13:15",
-    "14:00",
-    "14:45",
-    "15:30",
-    "16:15",
-    "17:00",
-    "17:45",
-  ];
+  const horarios_options = {
+    manha: ["08:15", "09:00", "09:45", "10:30", "11:15", "12:00", "12:45"],
+    tarde: ["13:15", "14:00", "14:45", "15:30", "16:15", "17:00", "17:45"],
+  };
 
   const terapia_optrions = [
     "ABA - Análise do Comport. Aplic.",
@@ -53,20 +57,84 @@ function SessaoForm() {
   ];
 
   useEffect(() => {
-    const database = new DatabaseService();
+    if (isAssistidoDialogOpen && sessao?.data && sessao?.horario) {
+      database
+        .get_assistidos_disponiveis(
+          sessao.data,
+          sessao.horario,
+          assistidoSearchTerm
+        )
+        .then((data) => setAssistidos(data))
+        .catch((err) => mostrarNotificacao(err.message, "error"));
+    }
+  }, [
+    isAssistidoDialogOpen,
+    sessao?.data,
+    sessao?.horario,
+    assistidoSearchTerm,
+  ]);
 
+  useEffect(() => {
+    if (isProfissionalDialogOpen && sessao?.data && sessao?.horario) {
+      database
+        .get_profissionais_disponiveis(
+          sessao.data,
+          sessao.horario,
+          isProfissionalPinned ? sessao.assistido_id : null,
+          profissionalSearchTerm
+        )
+        .then((data) => setProfissionais(data))
+        .catch((err) => mostrarNotificacao(err.message, "error"));
+    }
+  }, [
+    isProfissionalDialogOpen,
+    isProfissionalPinned,
+    sessao?.assistido_id,
+    sessao?.data,
+    sessao?.horario,
+    profissionalSearchTerm,
+  ]);
+
+  useEffect(() => {
+    if (isApoioDialogOpen && sessao?.data && sessao?.horario) {
+      database
+        .get_profissionais_disponiveis(
+          sessao.data,
+          sessao.horario,
+          isApoioPinned ? sessao.assistido_id : null,
+          apoioSearchTerm
+        )
+        .then((data) => setApoios(data))
+        .catch((err) => mostrarNotificacao(err.message, "error"));
+    }
+  }, [
+    isApoioDialogOpen,
+    isApoioPinned,
+    sessao?.assistido_id,
+    sessao?.data,
+    sessao?.horario,
+    apoioSearchTerm,
+  ]);
+
+  useEffect(() => {
     if (id && id !== "novo") {
       database
         .get_sessao_by_id(id)
         .then((data) => {
           setSessao(data);
+          // Set data selector based on loaded date
+          if (data?.data === Util.iso_date(0)) {
+            setDataSelecionada("HOJE");
+          } else if (data?.data === Util.iso_date(1)) {
+            setDataSelecionada("AMANHÃ");
+          }
         })
         .catch((err) => console.error(err));
     } else {
-      // Nova sessão
+      // Nova sessão - default to today
       setSessao({
         id: "",
-        data: "",
+        data: Util.iso_date(0),
         status: "PENDENTE",
         terapia: "",
         horario: "",
@@ -87,7 +155,24 @@ function SessaoForm() {
   const handleSave = async () => {
     if (!sessao) return;
 
-    const database = new DatabaseService();
+    if (
+      sessao &&
+      sessao.profissional_situacao === "INATIVO" &&
+      sessao.status == "AGENDADO"
+    )
+      return mostrarNotificacao(
+        "Não é possível atribuir um profissional inativo à sessão.",
+        "error"
+      );
+    if (
+      sessao &&
+      sessao.apoio_situacao === "INATIVO" &&
+      sessao.status == "AGENDADO"
+    )
+      return mostrarNotificacao(
+        "Não é possível atribuir um profissional de apoio inativo à sessão.",
+        "error"
+      );
 
     try {
       if (id === "novo") {
@@ -141,27 +226,31 @@ function SessaoForm() {
 
       <div className="h-full p-3 flex flex-col gap-4 bg-white rounded-lg border border-gray-200 shadow-sm overflow-auto">
         <form action="javascript:void(0)" className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label
-              htmlFor="data"
-              className="text-sm font-medium text-neutral-600"
-            >
-              Data
-            </label>
-            <input
-              type="date"
-              id="data"
-              name="data"
-              ref={dataInputRef}
-              className="w-full p-2.5 rounded-lg border border-gray-300 bg-white text-neutral-700 outline-none focus:border-gray-400 transition-colors"
-              value={sessao?.data || ""}
-              onChange={(e) => {
-                setSessao({ ...sessao, data: e.target.value } as ISessao);
-                setSessaoModified(true);
-              }}
-              onFocus={() => Util.handleFocus(dataInputRef)}
-            />
-          </div>
+          <SeletorDeBotoes
+            label="Dia"
+            options={["ONTEM", "HOJE", "AMANHÃ"]}
+            valorSelecionado={dataSelecionada}
+            onChange={(data: DataOption) => {
+              setDataSelecionada(data);
+              const dayOffset = data === "ONTEM" ? -1 : data === "HOJE" ? 0 : 1;
+              setSessao({
+                ...sessao,
+                data: Util.iso_date(dayOffset),
+                horario: "",
+                terapia: "",
+                assistido_id: "",
+                assistido_situacao: "",
+                assistido_nome: "",
+                profissional_id: "",
+                profissional_situacao: "",
+                profissional_nome: "",
+                apoio_id: "",
+                apoio_situacao: "",
+                apoio_nome: "",
+              } as ISessao);
+              setSessaoModified(true);
+            }}
+          />
 
           <div className="flex flex-col gap-1">
             <label
@@ -201,7 +290,15 @@ function SessaoForm() {
             </label>
             <button
               type="button"
-              onClick={() => setIsAssistidoDialogOpen(true)}
+              onClick={() => {
+                if (sessao?.horario) {
+                  setIsAssistidoDialogOpen(true);
+                } else {
+                  mostrarNotificacao(
+                    "Por favor, selecione um horário antes de escolher o assistido."
+                  );
+                }
+              }}
               className={`p-2.5 rounded-lg border bg-white text-neutral-700 outline-none hover:border-gray-400 transition-colors text-left ${
                 sessao?.assistido_situacao === "INATIVO"
                   ? "border-red-500"
@@ -218,7 +315,19 @@ function SessaoForm() {
             </label>
             <button
               type="button"
-              onClick={() => setIsProfissionalDialogOpen(true)}
+              onClick={() => {
+                if (!sessao?.horario) {
+                  mostrarNotificacao(
+                    "Por favor, selecione um horário antes de escolher o profissional."
+                  );
+                } else if (!sessao?.assistido_id) {
+                  mostrarNotificacao(
+                    "Por favor, selecione um assistido antes de escolher o profissional."
+                  );
+                } else {
+                  setIsProfissionalDialogOpen(true);
+                }
+              }}
               className={`p-2.5 rounded-lg border bg-white text-neutral-700 outline-none hover:border-gray-400 transition-colors text-left ${
                 sessao?.profissional_situacao === "INATIVO"
                   ? "border-red-500"
@@ -235,7 +344,19 @@ function SessaoForm() {
             </label>
             <button
               type="button"
-              onClick={() => setIsApoioDialogOpen(true)}
+              onClick={() => {
+                if (!sessao?.horario) {
+                  mostrarNotificacao(
+                    "Por favor, selecione um horário antes de escolher o profissional."
+                  );
+                } else if (!sessao?.assistido_id) {
+                  mostrarNotificacao(
+                    "Por favor, selecione um assistido antes de escolher o profissional."
+                  );
+                } else {
+                  setIsApoioDialogOpen(true);
+                }
+              }}
               className={`p-2.5 rounded-lg border bg-white text-neutral-700 outline-none hover:border-gray-400 transition-colors text-left ${
                 sessao?.apoio_situacao === "INATIVO"
                   ? "border-red-500"
@@ -290,23 +411,35 @@ function SessaoForm() {
         title="Selecione a Terapia"
       >
         <div className="flex flex-col gap-2">
-          {terapia_optrions.map((terapia) => (
-            <button
-              key={terapia}
-              onClick={() => {
-                setSessao({ ...sessao, terapia } as ISessao);
-                setSessaoModified(true);
-                setIsTerapiaDialogOpen(false);
-              }}
-              className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
-                sessao?.terapia === terapia
-                  ? "bg-(--blue) border-blue-300 text-neutral-800"
-                  : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
-              }`}
-            >
-              {terapia}
-            </button>
-          ))}
+          <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto">
+            {terapia_optrions.map((terapia) => (
+              <button
+                key={terapia}
+                onClick={() => {
+                  setSessao({ ...sessao, terapia } as ISessao);
+                  setSessaoModified(true);
+                  setIsTerapiaDialogOpen(false);
+                }}
+                className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
+                  sessao?.terapia === terapia
+                    ? "bg-blue-500 border-blue-500 text-white"
+                    : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                }`}
+              >
+                {terapia}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => {
+              setSessao({ ...sessao, terapia: "" } as ISessao);
+              setSessaoModified(true);
+              setIsTerapiaDialogOpen(false);
+            }}
+            className="flex-shrink-0 p-3 rounded-lg border border-red-300 bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 transition-all text-center"
+          >
+            Limpar
+          </button>
         </div>
       </BottomDialog>
 
@@ -315,24 +448,94 @@ function SessaoForm() {
         onClose={() => setIsHorarioDialogOpen(false)}
         title="Selecione o Horário"
       >
-        <div className="grid grid-cols-3 gap-2 max-h-[400px] overflow-y-auto">
-          {horarios_options.map((horario) => (
-            <button
-              key={horario}
-              onClick={() => {
-                setSessao({ ...sessao, horario } as ISessao);
-                setSessaoModified(true);
-                setIsHorarioDialogOpen(false);
-              }}
-              className={`p-3 rounded-lg border text-sm font-medium transition-all ${
-                sessao?.horario === horario
-                  ? "bg-(--blue) border-blue-300 text-neutral-800"
-                  : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
-              }`}
-            >
-              {horario}
-            </button>
-          ))}
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4 max-h-[400px] overflow-y-auto">
+            <div>
+              <h4 className="text-xs font-semibold text-neutral-600 mb-2">
+                Manhã
+              </h4>
+              <div className="grid grid-cols-3 gap-2">
+                {horarios_options.manha.map((horario) => (
+                  <button
+                    key={horario}
+                    onClick={() => {
+                      setSessao({
+                        ...sessao,
+                        horario,
+                        terapia: "",
+                        assistido_id: "",
+                        assistido_situacao: "",
+                        assistido_nome: "",
+                        profissional_id: "",
+                        profissional_situacao: "",
+                        profissional_nome: "",
+                        apoio_id: "",
+                        apoio_situacao: "",
+                        apoio_nome: "",
+                      } as ISessao);
+                      setSessaoModified(true);
+                      setIsHorarioDialogOpen(false);
+                    }}
+                    className={`p-3 rounded-lg border text-sm font-medium transition-all ${
+                      sessao?.horario === horario
+                        ? "bg-blue-500 border-blue-500 text-white"
+                        : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                    }`}
+                  >
+                    {horario}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-xs font-semibold text-neutral-600 mb-2">
+                Tarde
+              </h4>
+              <div className="grid grid-cols-3 gap-2">
+                {horarios_options.tarde.map((horario) => (
+                  <button
+                    key={horario}
+                    onClick={() => {
+                      setSessao({
+                        ...sessao,
+                        horario,
+                        terapia: "",
+                        assistido_id: "",
+                        assistido_situacao: "",
+                        assistido_nome: "",
+                        profissional_id: "",
+                        profissional_situacao: "",
+                        profissional_nome: "",
+                        apoio_id: "",
+                        apoio_situacao: "",
+                        apoio_nome: "",
+                      } as ISessao);
+                      setSessaoModified(true);
+                      setIsHorarioDialogOpen(false);
+                    }}
+                    className={`p-3 rounded-lg border text-sm font-medium transition-all ${
+                      sessao?.horario === horario
+                        ? "bg-blue-500 border-blue-500 text-white"
+                        : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                    }`}
+                  >
+                    {horario}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              setSessao({ ...sessao, horario: "" } as ISessao);
+              setSessaoModified(true);
+              setIsHorarioDialogOpen(false);
+            }}
+            className="flex-shrink-0 p-3 rounded-lg border border-red-300 bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 transition-all text-center"
+          >
+            Limpar
+          </button>
         </div>
       </BottomDialog>
 
@@ -341,10 +544,91 @@ function SessaoForm() {
         onClose={() => setIsProfissionalDialogOpen(false)}
         title="Selecione o Profissional"
       >
-        <div className="flex flex-col gap-2">
-          <p className="text-sm text-neutral-500 text-center">
-            Lista de profissionais disponíveis
-          </p>
+        <div className="flex flex-col gap-3">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+                size={20}
+              />
+              <input
+                type="text"
+                ref={profissionalSearchInputRef}
+                placeholder="Buscar por nome..."
+                className="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg border border-gray-300 text-neutral-700 outline-none focus:border-gray-400 transition-colors"
+                value={profissionalSearchTerm}
+                onChange={(e) => setProfissionalSearchTerm(e.target.value)}
+                onFocus={() => Util.handleFocus(profissionalSearchInputRef)}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsProfissionalPinned(!isProfissionalPinned)}
+              className={`p-2.5 rounded-lg border transition-colors ${
+                isProfissionalPinned
+                  ? "bg-blue-50 border-blue-300 text-blue-600 hover:bg-blue-100"
+                  : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400 hover:text-neutral-800"
+              }`}
+              title={
+                isProfissionalPinned
+                  ? "Desafixar do assistido"
+                  : "Fixar ao assistido"
+              }
+            >
+              <Pin size={20} />
+            </button>
+          </div>
+          <div
+            className="flex flex-col gap-2 overflow-y-auto"
+            style={{
+              minHeight: profissionais.length <= 3 ? "250px" : "auto",
+              maxHeight: "350px",
+            }}
+          >
+            {profissionais.length > 0 ? (
+              profissionais.map((profissional) => (
+                <button
+                  key={profissional.id}
+                  onClick={() => {
+                    setSessao({
+                      ...sessao,
+                      profissional_id: profissional.id,
+                      profissional_nome: profissional.nome,
+                      profissional_situacao: profissional.status,
+                    } as ISessao);
+                    setSessaoModified(true);
+                    setIsProfissionalDialogOpen(false);
+                  }}
+                  className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
+                    sessao?.profissional_id === profissional.id
+                      ? "bg-blue-500 border-blue-500 text-white"
+                      : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                  }`}
+                >
+                  {profissional.nome}
+                </button>
+              ))
+            ) : (
+              <p className="text-sm text-neutral-500 text-center">
+                Nenhum profissional encontrado.
+              </p>
+            )}
+          </div>
+          <button
+            onClick={() => {
+              setSessao({
+                ...sessao,
+                profissional_id: "",
+                profissional_nome: "",
+                profissional_situacao: "",
+              } as ISessao);
+              setSessaoModified(true);
+              setIsProfissionalDialogOpen(false);
+            }}
+            className="flex-shrink-0 p-3 rounded-lg border border-red-300 bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 transition-all text-center"
+          >
+            Limpar
+          </button>
         </div>
       </BottomDialog>
 
@@ -353,10 +637,89 @@ function SessaoForm() {
         onClose={() => setIsApoioDialogOpen(false)}
         title="Selecione o Apoio"
       >
-        <div className="flex flex-col gap-2">
-          <p className="text-sm text-neutral-500 text-center">
-            Lista de apoios disponíveis
-          </p>
+        <div className="flex flex-col gap-3">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+                size={20}
+              />
+              <input
+                type="text"
+                ref={apoioSearchInputRef}
+                placeholder="Buscar por nome..."
+                className="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg border border-gray-300 text-neutral-700 outline-none focus:border-gray-400 transition-colors"
+                value={apoioSearchTerm}
+                onChange={(e) => setApoioSearchTerm(e.target.value)}
+                onFocus={() => Util.handleFocus(apoioSearchInputRef)}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsApoioPinned(!isApoioPinned)}
+              className={`p-2.5 rounded-lg border transition-colors ${
+                isApoioPinned
+                  ? "bg-blue-50 border-blue-300 text-blue-600 hover:bg-blue-100"
+                  : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400 hover:text-neutral-800"
+              }`}
+              title={
+                isApoioPinned ? "Desafixar do assistido" : "Fixar ao assistido"
+              }
+            >
+              <Pin size={20} />
+            </button>
+          </div>
+          <div
+            className="flex flex-col gap-2 overflow-y-auto"
+            style={{
+              minHeight: apoios.length <= 3 ? "250px" : "auto",
+              maxHeight: "350px",
+            }}
+          >
+            {apoios.length > 0 ? (
+              apoios.map((apoio) => (
+                <button
+                  key={apoio.id}
+                  onClick={() => {
+                    setSessao({
+                      ...sessao,
+                      apoio_id: apoio.id,
+                      apoio_nome: apoio.nome,
+                      apoio_situacao: apoio.status,
+                    } as ISessao);
+                    setSessaoModified(true);
+                    setIsApoioDialogOpen(false);
+                  }}
+                  className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
+                    sessao?.apoio_id === apoio.id
+                      ? "bg-blue-500 border-blue-500 text-white"
+                      : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                  }`}
+                >
+                  {apoio.nome}
+                </button>
+              ))
+            ) : (
+              <p className="text-sm text-neutral-500 text-center">
+                Nenhum apoio encontrado.
+              </p>
+            )}
+          </div>
+          <button
+            onClick={() => {
+              setSessao({
+                ...sessao,
+                apoio_id: "",
+                apoio_nome: "",
+                apoio_situacao: "",
+              } as ISessao);
+              setSessaoModified(true);
+              setIsApoioDialogOpen(false);
+            }}
+            className="flex-shrink-0 p-3 rounded-lg border border-red-300 bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 transition-all text-center"
+          >
+            Limpar
+          </button>
         </div>
       </BottomDialog>
 
@@ -365,10 +728,70 @@ function SessaoForm() {
         onClose={() => setIsAssistidoDialogOpen(false)}
         title="Selecione o Assistido"
       >
-        <div className="flex flex-col gap-2">
-          <p className="text-sm text-neutral-500 text-center">
-            Lista de assistidos disponíveis
-          </p>
+        <div className="flex flex-col gap-3">
+          <div className="relative">
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+              size={20}
+            />
+            <input
+              type="text"
+              ref={assistidoSearchInputRef}
+              placeholder="Buscar por nome..."
+              className="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg border border-gray-300 text-neutral-700 outline-none focus:border-gray-400 transition-colors"
+              value={assistidoSearchTerm}
+              onChange={(e) => {
+                Util.handleFocus(assistidoSearchInputRef);
+                setAssistidoSearchTerm(e.target.value);
+              }}
+              onFocus={() => Util.handleFocus(assistidoSearchInputRef)}
+            />
+          </div>
+          <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto">
+            {assistidos.length > 0 ? (
+              assistidos.map((assistido) => (
+                <button
+                  key={assistido.id}
+                  onClick={() => {
+                    setSessao({
+                      ...sessao,
+                      assistido_id: assistido.id,
+                      assistido_nome: assistido.nome,
+                      assistido_situacao: assistido.status,
+                    } as ISessao);
+                    setSessaoModified(true);
+                    setIsAssistidoDialogOpen(false);
+                  }}
+                  className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
+                    sessao?.assistido_id === assistido.id
+                      ? "bg-(--blue) border-blue-300 text-neutral-800"
+                      : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                  }`}
+                >
+                  {assistido.nome}
+                </button>
+              ))
+            ) : (
+              <p className="text-sm text-neutral-500 text-center">
+                Nenhum assistido encontrado.
+              </p>
+            )}
+          </div>
+          <button
+            onClick={() => {
+              setSessao({
+                ...sessao,
+                assistido_id: "",
+                assistido_nome: "",
+                assistido_situacao: "",
+              } as ISessao);
+              setSessaoModified(true);
+              setIsAssistidoDialogOpen(false);
+            }}
+            className="flex-shrink-0 p-3 rounded-lg border border-red-300 bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 transition-all text-center"
+          >
+            Limpar
+          </button>
         </div>
       </BottomDialog>
     </div>

@@ -1,18 +1,39 @@
 import type { IAgenda } from "./IAgenda.tsx";
 import { Clock } from "lucide-react";
+import { useRef } from "react";
 
 function AgendaCard({
   agenda,
   onClick,
+  onLongPress,
 }: {
   agenda: IAgenda;
   onClick?: () => void;
+  onLongPress?: () => void;
 }) {
+  const pressTimer = useRef<number | null>(null);
+  const longPressTriggered = useRef(false);
+
+  const handlePressStart = () => {
+    longPressTriggered.current = false;
+    pressTimer.current = window.setTimeout(() => {
+      longPressTriggered.current = true;
+      if (onLongPress) onLongPress();
+    }, 500);
+  };
+
+  const handlePressEnd = () => {
+    if (pressTimer.current) clearTimeout(pressTimer.current);
+    if (!longPressTriggered.current && onClick) onClick();
+  };
   return (
     <li
       id={agenda.id}
-      onClick={onClick}
-      className="rounded-lg p-3 bg-(--blue) border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+      onTouchStart={handlePressStart}
+      onTouchEnd={handlePressEnd}
+      onMouseDown={handlePressStart}
+      onMouseUp={handlePressEnd}
+      className="rounded-lg p-3 bg-(--blue) border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer select-none"
     >
       <div className="flex items-center gap-3">
         <div className="flex flex-col items-center gap-1 min-w-[50px]">

@@ -2,7 +2,11 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import "./util/interceptor.ts";
 
-import { createBrowserRouter, RouterProvider } from "react-router";
+import {
+  BrowserRouter,
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router";
 import Login from "./pages/auth/Login.tsx";
 import Pesquisar from "./util/Pesquisar.tsx";
 import Home from "./pages/admin/home/Home.tsx";
@@ -73,8 +77,8 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")!).render(
-  <>
+  <BrowserRouter>
     <NotificacaoGlobal />
     <RouterProvider router={router} />
-  </>
+  </BrowserRouter>
 );

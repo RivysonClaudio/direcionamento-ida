@@ -1,6 +1,5 @@
 import { LogOut, Calendar, Users, Briefcase } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import DirecionamentoAviso from "../../../components/DirecionamentoAviso.tsx";
 import DatabaseService from "../../../services/database/DatabaseService.ts";
 import Util from "../../../util/util.tsx";
 import { useEffect, useState } from "react";

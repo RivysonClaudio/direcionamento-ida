@@ -566,7 +566,8 @@ class DatabaseService {
       );
     }
 
-    return data.map((item) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return data.map((item: any) => ({
       id: item.id,
       status: item.status,
       nome: item.name,
@@ -597,7 +598,8 @@ class DatabaseService {
       );
     }
 
-    return data.map((item) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return data.map((item: any) => ({
       id: item.id,
       status: item.status,
       nome: item.name,

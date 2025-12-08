@@ -5,7 +5,6 @@ import type { IAssistido } from "./IAssistido";
 import DatabaseService from "../../../services/database/DatabaseService.ts";
 import { useEffect, useState } from "react";
 import BottomDialog from "../../../components/BottomDialog";
-import { mostrarNotificacao } from "../../../util/notificacao.ts";
 
 function AssistidoList() {
   const navigate = useNavigate();

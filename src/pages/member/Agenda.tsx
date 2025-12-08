@@ -1,4 +1,4 @@
-import { ChevronLeft, Calendar, LogOut } from "lucide-react";
+import { Calendar, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import DatabaseService from "../../services/database/DatabaseService.ts";

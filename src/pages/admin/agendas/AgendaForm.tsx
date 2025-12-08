@@ -1,4 +1,4 @@
-import { ChevronLeft, Save, Search, Pin } from "lucide-react";
+import { ChevronLeft, Save, Search } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { IAgenda } from "./IAgenda";
@@ -15,7 +15,6 @@ function AgendaForm() {
 
   const database = new DatabaseService();
 
-  const [allAgendas, setAllAgendas] = useState<IAgenda[]>([]);
   const [agenda, setAgenda] = useState<IAgenda | null>(null);
   const [agendaModified, setAgendaModified] = useState(false);
   const [isProfissionalDialogOpen, setIsProfissionalDialogOpen] =
@@ -55,13 +54,6 @@ function AgendaForm() {
     { value: 5, label: "Quinta-feira" },
     { value: 6, label: "Sexta-feira" },
   ];
-
-  useEffect(() => {
-    database
-      .get_agenda_by_id("patient_id", id!)
-      .then((data) => setAllAgendas(data))
-      .catch((err) => console.error(err));
-  }, [id]);
 
   useEffect(() => {
     database

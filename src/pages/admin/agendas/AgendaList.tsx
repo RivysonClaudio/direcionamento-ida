@@ -3,7 +3,7 @@ import DatabaseService from "../../../services/database/DatabaseService.ts";
 import { useState, useEffect } from "react";
 import type { IAgenda } from "./IAgenda.tsx";
 import type { IAssistido } from "../assistidos/IAssistido.tsx";
-import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
 import AgendaCard from "./AgendaCard.tsx";
 import Util from "../../../util/util.tsx";
 import BottomDialog from "../../../components/BottomDialog.tsx";

@@ -5,7 +5,6 @@ import DatabaseService from "../../../services/database/DatabaseService.ts";
 import type { IProfissional } from "./IProfissional.tsx";
 import BottomDialog from "../../../components/BottomDialog";
 import ProfissionalCard from "./ProfissionalCard";
-import { mostrarNotificacao } from "../../../util/notificacao.ts";
 
 function ProfissionalList() {
   const navigate = useNavigate();

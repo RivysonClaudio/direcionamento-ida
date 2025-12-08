@@ -2,11 +2,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import "./util/interceptor.ts";
 
-import {
-  BrowserRouter,
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router";
+import { BrowserRouter, Routes, Route } from "react-router";
 import Login from "./pages/auth/Login.tsx";
 import Pesquisar from "./util/Pesquisar.tsx";
 import Home from "./pages/admin/home/Home.tsx";
@@ -21,64 +17,26 @@ import AgendaList from "./pages/admin/agendas/AgendaList.tsx";
 import AgendaForm from "./pages/admin/agendas/AgendaForm.tsx";
 import MemberAgenda from "./pages/member/Agenda.tsx";
 
-const router = createBrowserRouter([
-  {
-    path: "*",
-    element: <Login />,
-  },
-  {
-    path: "/login",
-    element: <Login />,
-  },
-  {
-    path: "/admin",
-    element: <Home />,
-  },
-  {
-    path: "/admin/sessoes",
-    element: <SessaoList />,
-  },
-  {
-    path: "/admin/sessoes/:id",
-    element: <SessaoForm />,
-  },
-  {
-    path: "/admin/pesquisar",
-    element: <Pesquisar />,
-  },
-  {
-    path: "admin/assistidos",
-    element: <AssistidoList />,
-  },
-  {
-    path: "admin/assistidos/:id",
-    element: <AssistidoForm />,
-  },
-  {
-    path: "admin/assistidos/:id/agenda",
-    element: <AgendaList />,
-  },
-  {
-    path: "admin/assistidos/:id/agenda/:agendaId",
-    element: <AgendaForm />,
-  },
-  {
-    path: "admin/profissionais",
-    element: <ProfissionalList />,
-  },
-  {
-    path: "admin/profissionais/:id",
-    element: <ProfissionalForm />,
-  },
-  {
-    path: "/member/:id/agenda",
-    element: <MemberAgenda />,
-  },
-]);
-
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <NotificacaoGlobal />
-    <RouterProvider router={router} />
+    <Routes>
+      <Route path="*" element={<Login />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/admin" element={<Home />} />
+      <Route path="/admin/sessoes" element={<SessaoList />} />
+      <Route path="/admin/sessoes/:id" element={<SessaoForm />} />
+      <Route path="/admin/pesquisar" element={<Pesquisar />} />
+      <Route path="/admin/assistidos" element={<AssistidoList />} />
+      <Route path="/admin/assistidos/:id" element={<AssistidoForm />} />
+      <Route path="/admin/assistidos/:id/agenda" element={<AgendaList />} />
+      <Route
+        path="/admin/assistidos/:id/agenda/:agendaId"
+        element={<AgendaForm />}
+      />
+      <Route path="/admin/profissionais" element={<ProfissionalList />} />
+      <Route path="/admin/profissionais/:id" element={<ProfissionalForm />} />
+      <Route path="/member/:id/agenda" element={<MemberAgenda />} />
+    </Routes>
   </BrowserRouter>
 );

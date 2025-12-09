@@ -368,8 +368,11 @@ class DatabaseService {
 
     if (filter.status) query = query.eq("status", filter.status);
     if (filter.patient_id) query = query.eq("patient_id", filter.patient_id);
-    if (filter.profissional_id)
-      query = query.eq("professional_id", filter.profissional_id);
+    if (filter.profissional_id) {
+      query = query.or(
+        `professional_id.eq.${filter.profissional_id},helper_id.eq.${filter.profissional_id}`
+      );
+    }
     if (filter.therapy) query = query.eq("therapy", filter.therapy);
     if (filter.session_time)
       query = query.eq("session_time", filter.session_time);

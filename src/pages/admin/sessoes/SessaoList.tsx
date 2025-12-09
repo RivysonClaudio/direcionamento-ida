@@ -249,15 +249,15 @@ function SessaoList() {
               </button>
               <button
                 onClick={() =>
-                  setTempFilter({ ...tempFilter, status: "CONFIRMADO" })
+                  setTempFilter({ ...tempFilter, status: "AGENDADO" })
                 }
                 className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
-                  tempFilter.status === "CONFIRMADO"
+                  tempFilter.status === "AGENDADO"
                     ? "bg-blue-500 border-blue-500 text-white"
                     : "border-gray-300 hover:bg-gray-50"
                 }`}
               >
-                Confirmado
+                Agendado
               </button>
               <button
                 onClick={() =>

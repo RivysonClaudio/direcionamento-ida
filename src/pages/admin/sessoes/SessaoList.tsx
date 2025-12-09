@@ -24,7 +24,9 @@ function SessaoList() {
   const database = new DatabaseService();
   const [sessoes, setSessoes] = useState<ISessao[]>([]);
   const [sessoesPendentes, setSessoesPendentes] = useState<ISessao[]>([]);
-  const [selected, setSelected] = useState("HOJE");
+  const [selected, setSelected] = useState(
+    localStorage.getItem("sessao_selected_day") || "HOJE"
+  );
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const options = ["ONTEM", "HOJE", "AMANHÃ"];
   const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
@@ -37,8 +39,12 @@ function SessaoList() {
     useState(false);
   const [profissionais, setProfissionais] = useState<IProfissional[]>([]);
   const [profissionalSearchTerm, setProfissionalSearchTerm] = useState("");
-  const [selectedAssistidoNome, setSelectedAssistidoNome] = useState("");
-  const [selectedProfissionalNome, setSelectedProfissionalNome] = useState("");
+  const [selectedAssistidoNome, setSelectedAssistidoNome] = useState(
+    localStorage.getItem("sessao_filter_assistido_nome") || ""
+  );
+  const [selectedProfissionalNome, setSelectedProfissionalNome] = useState(
+    localStorage.getItem("sessao_filter_profissional_nome") || ""
+  );
 
   const horarios_options = {
     manha: ["08:15", "09:00", "09:45", "10:30", "11:15", "12:00", "12:45"],
@@ -50,12 +56,17 @@ function SessaoList() {
     "Outras terapias",
   ];
 
-  const [filter, setFilter] = useState({
-    status: "",
-    patient_id: "",
-    profissional_id: "",
-    therapy: "",
-    session_time: "",
+  const [filter, setFilter] = useState(() => {
+    const saved = localStorage.getItem("sessao_filter");
+    return saved
+      ? JSON.parse(saved)
+      : {
+          status: "",
+          patient_id: "",
+          profissional_id: "",
+          therapy: "",
+          session_time: "",
+        };
   });
   const [tempFilter, setTempFilter] = useState({
     status: "",
@@ -139,7 +150,10 @@ function SessaoList() {
       <SeletorDeBotoes
         options={options}
         valorSelecionado={selected}
-        onChange={setSelected}
+        onChange={(value) => {
+          setSelected(value);
+          localStorage.setItem("sessao_selected_day", value);
+        }}
       />
 
       <ul className="h-full p-2 flex flex-col gap-3 overflow-y-auto rounded-lg bg-white border border-gray-200 shadow-sm">
@@ -334,6 +348,12 @@ function SessaoList() {
                 setFilter(defaultFilter);
                 setSelectedAssistidoNome("");
                 setSelectedProfissionalNome("");
+                localStorage.setItem(
+                  "sessao_filter",
+                  JSON.stringify(defaultFilter)
+                );
+                localStorage.removeItem("sessao_filter_assistido_nome");
+                localStorage.removeItem("sessao_filter_profissional_nome");
                 setIsFilterDialogOpen(false);
               }}
               className="flex-1 py-3 rounded-lg bg-gray-200 text-neutral-700 font-medium hover:bg-gray-300 transition-colors"
@@ -343,6 +363,10 @@ function SessaoList() {
             <button
               onClick={() => {
                 setFilter(tempFilter);
+                localStorage.setItem(
+                  "sessao_filter",
+                  JSON.stringify(tempFilter)
+                );
                 setIsFilterDialogOpen(false);
               }}
               className="flex-1 py-3 rounded-lg bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors"
@@ -494,6 +518,7 @@ function SessaoList() {
               onClick={() => {
                 setTempFilter({ ...tempFilter, patient_id: "" });
                 setSelectedAssistidoNome("");
+                localStorage.removeItem("sessao_filter_assistido_nome");
                 setIsAssistidoDialogOpen(false);
               }}
               className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
@@ -518,11 +543,19 @@ function SessaoList() {
                           ? ""
                           : assistido.id,
                     });
-                    setSelectedAssistidoNome(
+                    const newNome =
                       tempFilter.patient_id === assistido.id
                         ? ""
-                        : assistido.nome
-                    );
+                        : assistido.nome;
+                    setSelectedAssistidoNome(newNome);
+                    if (newNome) {
+                      localStorage.setItem(
+                        "sessao_filter_assistido_nome",
+                        newNome
+                      );
+                    } else {
+                      localStorage.removeItem("sessao_filter_assistido_nome");
+                    }
                     setIsAssistidoDialogOpen(false);
                   }}
                   className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
@@ -567,6 +600,7 @@ function SessaoList() {
               onClick={() => {
                 setTempFilter({ ...tempFilter, profissional_id: "" });
                 setSelectedProfissionalNome("");
+                localStorage.removeItem("sessao_filter_profissional_nome");
                 setIsProfissionalDialogOpen(false);
               }}
               className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
@@ -591,11 +625,21 @@ function SessaoList() {
                           ? ""
                           : profissional.id,
                     });
-                    setSelectedProfissionalNome(
+                    const newNome =
                       tempFilter.profissional_id === profissional.id
                         ? ""
-                        : profissional.nome
-                    );
+                        : profissional.nome;
+                    setSelectedProfissionalNome(newNome);
+                    if (newNome) {
+                      localStorage.setItem(
+                        "sessao_filter_profissional_nome",
+                        newNome
+                      );
+                    } else {
+                      localStorage.removeItem(
+                        "sessao_filter_profissional_nome"
+                      );
+                    }
                     setIsProfissionalDialogOpen(false);
                   }}
                   className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${

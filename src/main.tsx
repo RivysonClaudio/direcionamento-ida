@@ -36,6 +36,11 @@ createRoot(document.getElementById("root")!).render(
       />
       <Route path="/admin/profissionais" element={<ProfissionalList />} />
       <Route path="/admin/profissionais/:id" element={<ProfissionalForm />} />
+      <Route path="/admin/profissionais/:id/agenda" element={<AgendaList />} />
+      <Route
+        path="/admin/profissionais/:id/agenda/:agendaId"
+        element={<AgendaForm />}
+      />
       <Route path="/member/:id/agenda" element={<MemberAgenda />} />
     </Routes>
   </BrowserRouter>

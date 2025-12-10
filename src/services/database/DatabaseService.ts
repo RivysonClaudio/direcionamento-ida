@@ -270,17 +270,23 @@ class DatabaseService {
     column_name: string,
     column_value: string
   ): Promise<IAgenda[]> {
-    const query = await this.supabase
-      .from("vw_schedules")
-      .select("*")
-      .eq(column_name, column_value)
+    let query = this.supabase.from("vw_schedules").select("*");
+
+    if (column_name === "patient_id")
+      query = query.eq("patient_id", column_value);
+    if (column_name === "professional_id")
+      query = query.or(
+        `professional_id.eq.${column_value},helper_id.eq.${column_value}`
+      );
+
+    const result = await query
       .order("week_day", { ascending: true })
       .order("session_time", { ascending: true });
 
-    if (query.error) {
-      throw new Error(`Error fetching agenda: ${query.error.message}`);
+    if (result.error) {
+      throw new Error(`Error fetching agenda: ${result.error.message}`);
     } else {
-      const result = query.data.map((item) => ({
+      const data = result.data.map((item) => ({
         id: item.id,
         assistido_id: item.patient_id,
         assistido: item.patient,
@@ -293,7 +299,7 @@ class DatabaseService {
         terapia: item.therapy,
       })) as IAgenda[];
 
-      return result;
+      return data;
     }
   }
 
@@ -338,7 +344,10 @@ class DatabaseService {
   }
 
   async delete_agenda(id: string): Promise<void> {
-    const query = await this.supabase.from("schedules").delete().eq("id", id);
+    const query = await this.supabase
+      .from("schedules")
+      .update({ is_deleted: true })
+      .eq("id", id);
 
     if (query.error) {
       throw query.error;

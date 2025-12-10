@@ -11,10 +11,15 @@ function AssistidoList() {
   const database = new DatabaseService();
   const [assistidos, setAssistidos] = useState<IAssistido[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [filter, setFilter] = useState({
-    status: "ATIVO",
-    shift: "",
-    support: "",
+  const [filter, setFilter] = useState(() => {
+    const saved = localStorage.getItem("assistido_filter");
+    return saved
+      ? JSON.parse(saved)
+      : {
+          status: "ATIVO",
+          shift: "",
+          support: "",
+        };
   });
   const [tempFilter, setTempFilter] = useState({
     status: "ATIVO",
@@ -80,7 +85,11 @@ function AssistidoList() {
             setTempFilter(filter);
             setIsFilterOpen(true);
           }}
-          className="p-2.5 bg-white rounded-lg border border-gray-300 text-neutral-600 hover:text-neutral-800 hover:border-gray-400 transition-colors"
+          className={`p-2.5 rounded-lg border transition-colors ${
+            filter.status !== "ATIVO" || filter.shift || filter.support
+              ? "bg-blue-50 border-blue-500 text-blue-600"
+              : "bg-white border-gray-300 text-neutral-600 hover:text-neutral-800 hover:border-gray-400"
+          }`}
           title="Filtrar"
         >
           <Filter size={20} />
@@ -247,6 +256,10 @@ function AssistidoList() {
                 };
                 setTempFilter(defaultFilter);
                 setFilter(defaultFilter);
+                localStorage.setItem(
+                  "assistido_filter",
+                  JSON.stringify(defaultFilter)
+                );
                 setIsFilterOpen(false);
               }}
               className="flex-1 py-3 rounded-lg bg-gray-200 text-neutral-700 font-medium hover:bg-gray-300 transition-colors"
@@ -256,6 +269,10 @@ function AssistidoList() {
             <button
               onClick={() => {
                 setFilter(tempFilter);
+                localStorage.setItem(
+                  "assistido_filter",
+                  JSON.stringify(tempFilter)
+                );
                 setIsFilterOpen(false);
               }}
               className="flex-1 py-3 rounded-lg bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors"

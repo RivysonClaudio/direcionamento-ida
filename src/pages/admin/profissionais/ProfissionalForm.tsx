@@ -20,7 +20,11 @@ function ProfissionalForm() {
 
   const status_options = ["ATIVO", "INATIVO"];
   const turno_options = ["MANHA", "TARDE"];
-  const funcoes_options = ["Aplicador - ABA", "Aux. Coord. - ABA"];
+  const funcoes_options = [
+    "Aplicador - ABA",
+    "Aux. Coord. - ABA",
+    "Coordenador - ABA",
+  ];
 
   const dias_da_semana = [2, 3, 4, 5, 6];
   const dias_da_semana_nomes: Record<number, string> = {

@@ -12,6 +12,8 @@ import Util from "../../../util/util";
 function AgendaForm() {
   const navigate = useNavigate();
   const { id, agendaId } = useParams<{ id: string; agendaId: string }>();
+  const isFromProfissionais =
+    window.location.pathname.includes("/profissionais/");
 
   const database = new DatabaseService();
 
@@ -85,31 +87,103 @@ function AgendaForm() {
         })
         .catch((err) => console.error(err));
     } else {
-      setAgenda({
-        id: "",
-        assistido_id: id || "",
-        assistido: "",
-        profissional_id: "",
-        profissional: "",
-        apoio_id: "",
-        apoio: "",
-        terapia: "",
-        dia_semana: 1,
-        horario: "",
-      });
+      // Nova agenda - buscar dados conforme a rota
+      if (id) {
+        if (isFromProfissionais) {
+          // Rota de profissionais - preencher profissional
+          database
+            .get_profissional_by_id(id)
+            .then((profissional) => {
+              setAgenda({
+                id: "",
+                assistido_id: "",
+                assistido: "",
+                profissional_id: id,
+                profissional: profissional?.nome || "",
+                apoio_id: "",
+                apoio: "",
+                terapia: "",
+                dia_semana: 1,
+                horario: "",
+              });
+            })
+            .catch((err) => {
+              console.error(err);
+              setAgenda({
+                id: "",
+                assistido_id: "",
+                assistido: "",
+                profissional_id: id,
+                profissional: "",
+                apoio_id: "",
+                apoio: "",
+                terapia: "",
+                dia_semana: 1,
+                horario: "",
+              });
+            });
+        } else {
+          // Rota de assistidos - preencher assistido
+          database
+            .get_assistido_by_id(id)
+            .then((assistido) => {
+              setAgenda({
+                id: "",
+                assistido_id: id,
+                assistido: assistido?.nome || "",
+                profissional_id: "",
+                profissional: "",
+                apoio_id: "",
+                apoio: "",
+                terapia: "",
+                dia_semana: 1,
+                horario: "",
+              });
+            })
+            .catch((err) => {
+              console.error(err);
+              setAgenda({
+                id: "",
+                assistido_id: id,
+                assistido: "",
+                profissional_id: "",
+                profissional: "",
+                apoio_id: "",
+                apoio: "",
+                terapia: "",
+                dia_semana: 1,
+                horario: "",
+              });
+            });
+        }
+      } else {
+        setAgenda({
+          id: "",
+          assistido_id: "",
+          assistido: "",
+          profissional_id: "",
+          profissional: "",
+          apoio_id: "",
+          apoio: "",
+          terapia: "",
+          dia_semana: 1,
+          horario: "",
+        });
+      }
     }
-  }, [agendaId]);
+  }, [agendaId, id, isFromProfissionais]);
 
   const handleSave = async () => {
     if (!agenda) return;
-
-    // const database = new DatabaseService();
 
     try {
       if (agendaId === "nova") {
         database.create_agenda(agenda).then(() => {
           mostrarNotificacao("Agenda criada com sucesso!", "success");
-          navigate(`/admin/assistidos/${id}/agenda`);
+          const baseRoute = isFromProfissionais
+            ? "/admin/profissionais"
+            : "/admin/assistidos";
+          navigate(`${baseRoute}/${id}/agenda`);
         });
       } else {
         database.update_agenda(agenda).then(() => {
@@ -131,7 +205,12 @@ function AgendaForm() {
     <div className="flex flex-col gap-3 w-screen h-dvh p-4 bg-(--yellow)">
       <div className="relative py-2 flex items-center justify-center">
         <button
-          onClick={() => navigate(`/admin/assistidos/${id}/agenda`)}
+          onClick={() => {
+            const baseRoute = isFromProfissionais
+              ? "/admin/profissionais"
+              : "/admin/assistidos";
+            navigate(`${baseRoute}/${id}/agenda`);
+          }}
           className="absolute top-0 left-0 p-2 text-neutral-600 hover:text-neutral-800 transition-colors"
           title="Voltar"
         >

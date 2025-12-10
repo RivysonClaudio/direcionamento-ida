@@ -1,5 +1,6 @@
 const originalFetch = window.fetch;
 
+import type { ErrorResponseDTO } from "../services/database/ErrorResponseDTO";
 import { mostrarNotificacao } from "./notificacao";
 
 window.fetch = async function (...args) {
@@ -28,11 +29,56 @@ window.fetch = async function (...args) {
     const response = await originalFetch(url, config);
 
     if (!response.ok) {
-      const errorMsg = `${response.status} ${response.statusText}`;
-      mostrarNotificacao(errorMsg, "error");
+      const errorResponse: ErrorResponseDTO = await response.json();
+
+      switch (errorResponse.code) {
+        case "PGRST116":
+          mostrarNotificacao(
+            "Ação não permitida. Você não tem permissão para executar esta ação.",
+            "error"
+          );
+          break;
+        case "PGRST117":
+          mostrarNotificacao(
+            "Ação não permitida. Você não tem permissão para acessar este recurso.",
+            "error"
+          );
+          break;
+        case "23502":
+          mostrarNotificacao(
+            "Ação não concluída. Dados incompletos.",
+            "warning"
+          );
+          break;
+        case "23503":
+          mostrarNotificacao(
+            "Ação não concluída. Registro relacionado não encontrado.",
+            "warning"
+          );
+          break;
+        case "23505":
+          mostrarNotificacao(
+            "Ação não concluída. Registro duplicado.",
+            "warning"
+          );
+          break;
+        case "23514":
+          mostrarNotificacao(
+            "Ação não concluída. Violação de restrição de dados.",
+            "warning"
+          );
+          break;
+        default:
+          mostrarNotificacao(
+            `Erro ao processar a requisição: ${errorResponse.message}`,
+            "error"
+          );
+          break;
+      }
 
       // Redirecionar para login se for erro de autenticação
       if (response.status === 401 || response.status === 403) {
+        mostrarNotificacao("Sessão expirada. Faça login novamente.", "warning");
         window.location.href = "/login";
       }
     }

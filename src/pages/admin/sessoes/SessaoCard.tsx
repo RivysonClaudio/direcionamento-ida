@@ -47,7 +47,7 @@ function SessaoCard({ sessao }: SessaoCardProps) {
         </div>
 
         <div className="flex-1 flex flex-col gap-1 min-w-0">
-          <p className="text-sm font-semibold text-neutral-800">
+          <p className="text-sm font-semibold text-neutral-800 truncate">
             {sessao.assistido_nome}
           </p>
           <p className="text-xs text-neutral-600">{sessao.terapia}</p>

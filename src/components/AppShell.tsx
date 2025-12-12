@@ -6,6 +6,7 @@ import {
   MoreHorizontal,
   UserCheck,
   LogOut,
+  CalendarSync,
 } from "lucide-react";
 import { useState } from "react";
 import BottomDialog from "./BottomDialog";
@@ -27,6 +28,7 @@ function AppShell() {
 
   // Extrair ID do profissional da rota /member/:id/agenda
   const getMemberId = () => {
+    // eslint-disable-next-line no-useless-escape
     const match = location.pathname.match(/\/member\/([^\/]+)/);
     return match ? match[1] : "";
   };
@@ -118,16 +120,28 @@ function AppShell() {
       >
         <div className="flex flex-col gap-2">
           {isAdmin && (
-            <button
-              onClick={() => {
-                navigate("/admin/profissionais");
-                setIsMoreDialogOpen(false);
-              }}
-              className="flex items-center gap-3 p-3 rounded-lg border border-gray-300 bg-white text-neutral-700 hover:bg-gray-50 transition-colors"
-            >
-              <UserCheck size={20} />
-              <span>Profissionais</span>
-            </button>
+            <>
+              <button
+                onClick={() => {
+                  navigate("/admin/profissionais");
+                  setIsMoreDialogOpen(false);
+                }}
+                className="flex items-center gap-3 p-3 rounded-lg border border-gray-300 bg-white text-neutral-700 hover:bg-gray-50 transition-colors"
+              >
+                <UserCheck size={20} />
+                <span>Profissionais</span>
+              </button>
+              <button
+                onClick={() => {
+                  navigate("/admin/medtherapy");
+                  setIsMoreDialogOpen(false);
+                }}
+                className="flex items-center gap-3 p-3 rounded-lg border border-gray-300 bg-white text-neutral-700 hover:bg-gray-50 transition-colors"
+              >
+                <CalendarSync size={20} />
+                <span>Sincronização de Agenda Med</span>
+              </button>
+            </>
           )}
           <button
             onClick={() => {

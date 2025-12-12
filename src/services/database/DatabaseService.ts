@@ -3,6 +3,7 @@ import type { IAssistido } from "../../pages/admin/assistidos/IAssistido";
 import type { IProfissional } from "../../pages/admin/profissionais/IProfissional";
 import type { IAgenda } from "../../pages/admin/agendas/IAgenda";
 import type { ISessao } from "../../pages/admin/sessoes/ISessao";
+import type { IMedAgenda } from "../../pages/admin/medtherapy/IMedAgenda";
 
 class DatabaseService {
   private supabaseUrl: string;
@@ -623,6 +624,18 @@ class DatabaseService {
       turno: item.shift,
       funcao: item.function,
     })) as IProfissional[];
+  }
+
+  async get_medtherapy_agenda() {
+    const { data, error } = await this.supabase
+      .from("vw_med_agenda_sync_aba")
+      .select("*");
+
+    if (error) {
+      throw new Error(`Error fetching medtherapy agenda: ${error.message}`);
+    }
+
+    return data as IMedAgenda[];
   }
 }
 

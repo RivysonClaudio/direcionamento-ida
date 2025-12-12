@@ -17,6 +17,7 @@ import AgendaList from "./pages/admin/agendas/AgendaList.tsx";
 import AgendaForm from "./pages/admin/agendas/AgendaForm.tsx";
 import MemberAgenda from "./pages/member/Agenda.tsx";
 import AppShell from "./components/AppShell.tsx";
+import MedAgenda from "./pages/admin/medtherapy/MedAgenda.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
@@ -43,6 +44,7 @@ createRoot(document.getElementById("root")!).render(
           path="profissionais/:id/agenda/:agendaId"
           element={<AgendaForm />}
         />
+        <Route path="medtherapy" element={<MedAgenda />} />
       </Route>
       <Route path="/member/:id" element={<AppShell />}>
         <Route path="agenda" element={<MemberAgenda />} />

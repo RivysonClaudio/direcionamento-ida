@@ -64,7 +64,7 @@ function AgendaList() {
   }
 
   return (
-    <div className="relative flex flex-col gap-3 w-screen h-dvh p-4 bg-(--yellow) box-border">
+    <div className="relative flex flex-col gap-3 h-full p-4 box-border">
       <div className="relative py-2 flex items-center justify-center">
         <button
           onClick={() => navigate("/admin/assistidos/" + id)}

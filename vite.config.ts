@@ -8,5 +8,5 @@ export default defineConfig({
   server: {
     host: true,
   },
-  base: process.env.VITE_BASE_PATH || "/direcionamento-ida",
+  // base: process.env.VITE_BASE_PATH || "/direcionamento-ida",
 });

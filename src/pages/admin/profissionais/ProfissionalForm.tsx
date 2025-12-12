@@ -122,7 +122,7 @@ function ProfissionalForm() {
   };
 
   return (
-    <div className="flex flex-col gap-3 w-screen h-dvh p-4 bg-(--yellow)">
+    <div className="flex flex-col gap-3 h-full p-4">
       <div className="relative py-2 flex items-center justify-center">
         <button
           onClick={() => navigate("/admin/profissionais")}

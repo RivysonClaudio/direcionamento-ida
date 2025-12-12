@@ -76,6 +76,7 @@ class DatabaseService {
         nome: item.name,
         nivel_suporte: item.support_level,
         precisa_apoio: item.helper_needed,
+        med_id: item.patient_med_id,
       })) as IAssistido[];
 
       return data;
@@ -103,6 +104,7 @@ class DatabaseService {
         turno: item.shift,
         nivel_suporte: item.support_level,
         precisa_apoio: item.helper_needed,
+        med_id: item.patient_med_id,
       };
 
       return result;
@@ -119,6 +121,7 @@ class DatabaseService {
       shift: assistido.turno ?? null,
       support_level: assistido.nivel_suporte ?? null,
       helper_needed: assistido.precisa_apoio ?? null,
+      patient_med_id: assistido.med_id ?? null,
       created_by: user.data.user?.id || null,
       updated_by: user.data.user?.id || null,
     });
@@ -140,6 +143,7 @@ class DatabaseService {
         shift: assistido.turno,
         support_level: assistido.nivel_suporte,
         helper_needed: assistido.precisa_apoio,
+        patient_med_id: assistido.med_id,
         updated_by: user.data.user?.id || null,
       })
       .eq("id", assistido.id);
@@ -585,6 +589,7 @@ class DatabaseService {
       nome: item.name,
       nivel_suporte: item.support_level,
       precisa_apoio: item.helper_needed,
+      med_id: item.patient_med_id,
     })) as IAssistido[];
   }
 

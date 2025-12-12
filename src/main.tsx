@@ -16,6 +16,7 @@ import SessaoForm from "./pages/admin/sessoes/SessaoForm.tsx";
 import AgendaList from "./pages/admin/agendas/AgendaList.tsx";
 import AgendaForm from "./pages/admin/agendas/AgendaForm.tsx";
 import MemberAgenda from "./pages/member/Agenda.tsx";
+import AppShell from "./components/AppShell.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
@@ -23,25 +24,29 @@ createRoot(document.getElementById("root")!).render(
     <Routes>
       <Route path="*" element={<Login />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/admin" element={<Home />} />
-      <Route path="/admin/sessoes" element={<SessaoList />} />
-      <Route path="/admin/sessoes/:id" element={<SessaoForm />} />
-      <Route path="/admin/pesquisar" element={<Pesquisar />} />
-      <Route path="/admin/assistidos" element={<AssistidoList />} />
-      <Route path="/admin/assistidos/:id" element={<AssistidoForm />} />
-      <Route path="/admin/assistidos/:id/agenda" element={<AgendaList />} />
-      <Route
-        path="/admin/assistidos/:id/agenda/:agendaId"
-        element={<AgendaForm />}
-      />
-      <Route path="/admin/profissionais" element={<ProfissionalList />} />
-      <Route path="/admin/profissionais/:id" element={<ProfissionalForm />} />
-      <Route path="/admin/profissionais/:id/agenda" element={<AgendaList />} />
-      <Route
-        path="/admin/profissionais/:id/agenda/:agendaId"
-        element={<AgendaForm />}
-      />
-      <Route path="/member/:id/agenda" element={<MemberAgenda />} />
+      <Route path="/admin" element={<AppShell />}>
+        <Route index element={<Home />} />
+        <Route path="sessoes" element={<SessaoList />} />
+        <Route path="sessoes/:id" element={<SessaoForm />} />
+        <Route path="pesquisar" element={<Pesquisar />} />
+        <Route path="assistidos" element={<AssistidoList />} />
+        <Route path="assistidos/:id" element={<AssistidoForm />} />
+        <Route path="assistidos/:id/agenda" element={<AgendaList />} />
+        <Route
+          path="assistidos/:id/agenda/:agendaId"
+          element={<AgendaForm />}
+        />
+        <Route path="profissionais" element={<ProfissionalList />} />
+        <Route path="profissionais/:id" element={<ProfissionalForm />} />
+        <Route path="profissionais/:id/agenda" element={<AgendaList />} />
+        <Route
+          path="profissionais/:id/agenda/:agendaId"
+          element={<AgendaForm />}
+        />
+      </Route>
+      <Route path="/member/:id" element={<AppShell />}>
+        <Route path="agenda" element={<MemberAgenda />} />
+      </Route>
     </Routes>
   </BrowserRouter>
 );

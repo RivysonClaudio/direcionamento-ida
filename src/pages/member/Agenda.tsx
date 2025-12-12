@@ -1,5 +1,4 @@
-import { Calendar, LogOut } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 import DatabaseService from "../../services/database/DatabaseService.ts";
 import Util from "../../util/util.tsx";
@@ -12,7 +11,6 @@ import SessaoDetalhes from "./SessaoDetalhes.tsx";
 type DataOption = "ONTEM" | "HOJE" | "AMANHÃ";
 
 function Agenda() {
-  const navigate = useNavigate();
   const database = new DatabaseService();
 
   const { id } = useParams<{ id: string }>();
@@ -49,25 +47,13 @@ function Agenda() {
   }, [dataSelecionada]);
 
   return (
-    <div className="flex flex-col w-screen h-dvh bg-(--blue)">
+    <div className="flex flex-col h-full bg-(--blue)">
       <div className="flex-shrink-0 p-4 pb-2">
         <div className="flex items-center gap-3 mb-4">
-          <span className="w-12"></span>
           <div className="flex-1 text-center">
             <p className="text-sm text-neutral-600">{Util.today_date()}</p>
             <h1 className="text-xl font-bold text-neutral-800">Olá, {user}!</h1>
           </div>
-          <button
-            onClick={() => {
-              localStorage.removeItem("authToken");
-              localStorage.removeItem("user");
-              navigate("/login");
-            }}
-            className="p-2 text-neutral-600 hover:text-neutral-800 transition-colors"
-            title="Sair"
-          >
-            <LogOut size={24} />
-          </button>
         </div>
 
         <SeletorDeBotoes<DataOption>

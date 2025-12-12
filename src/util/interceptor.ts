@@ -3,6 +3,11 @@ const originalFetch = window.fetch;
 import type { ErrorResponseDTO } from "../services/database/ErrorResponseDTO";
 import { mostrarNotificacao } from "./notificacao";
 
+// Expor originalFetch globalmente para casos especiais
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+window.originalFetch = originalFetch;
+
 window.fetch = async function (...args) {
   // eslint-disable-next-line prefer-const
   let [url, config] = args;

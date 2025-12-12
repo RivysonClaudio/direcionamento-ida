@@ -6,4 +6,5 @@ export interface IAssistido {
   turno: string | null;
   nivel_suporte: string | null;
   precisa_apoio: boolean | null;
+  med_id: number | null;
 }

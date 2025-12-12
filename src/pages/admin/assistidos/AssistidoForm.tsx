@@ -47,6 +47,7 @@ function AssistidoForm() {
         turno: null,
         nivel_suporte: null,
         precisa_apoio: null,
+        med_id: null,
       } as IAssistido);
     } else {
       database
@@ -100,7 +101,7 @@ function AssistidoForm() {
   };
 
   return (
-    <div className="flex flex-col gap-3 w-screen h-dvh p-4 bg-(--yellow)">
+    <div className="flex flex-col gap-3 h-full p-4">
       <div className="relative py-2 flex items-center justify-center">
         <button
           onClick={() => navigate("/admin/assistidos")}
@@ -272,6 +273,29 @@ function AssistidoForm() {
               Carregando agenda...
             </div>
           )}
+        </div>
+        <div className="flex flex-col gap-1">
+          <label
+            htmlFor="med_id"
+            className="text-sm font-medium text-neutral-600"
+          >
+            Med Therapy ID
+          </label>
+          <input
+            type="text"
+            id="med_id"
+            name="med_id"
+            autoComplete="off"
+            className="p-2.5 rounded-lg border border-gray-300 bg-white text-neutral-700 outline-none focus:border-gray-400 transition-colors"
+            value={assistido?.med_id ?? ""}
+            onChange={(e) => {
+              setAssistido({
+                ...assistido,
+                med_id: parseInt(e.target.value, 10) || null,
+              } as IAssistido);
+              setAssistidoModified(true);
+            }}
+          />
         </div>
       </div>
     </div>

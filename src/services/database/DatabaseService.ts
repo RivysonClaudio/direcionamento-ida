@@ -277,6 +277,7 @@ class DatabaseService {
   ): Promise<IAgenda[]> {
     let query = this.supabase.from("vw_schedules").select("*");
 
+    if (column_name === "id") query = query.eq("id", column_value);
     if (column_name === "patient_id")
       query = query.eq("patient_id", column_value);
     if (column_name === "professional_id")

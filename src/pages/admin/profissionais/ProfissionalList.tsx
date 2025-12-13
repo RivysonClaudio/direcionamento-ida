@@ -53,16 +53,18 @@ function ProfissionalList() {
 
   useEffect(() => {
     localStorage.setItem("profissional_filter", JSON.stringify(filter));
-    loadProfissionais("");
-  }, [filter]);
 
-  useEffect(() => {
+    if (!searchTerm) {
+      loadProfissionais("");
+      return;
+    }
+
     const timer = setTimeout(() => {
       loadProfissionais(searchTerm);
     }, 350);
 
     return () => clearTimeout(timer);
-  }, [searchTerm]);
+  }, [searchTerm, filter]);
 
   return (
     <div className="flex flex-col gap-3 h-full p-4">

@@ -43,16 +43,17 @@ function AssistidoList() {
   };
 
   useEffect(() => {
-    loadAssistidos("");
-  }, [filter]);
+    if (!searchTerm) {
+      loadAssistidos("");
+      return;
+    }
 
-  useEffect(() => {
     const timer = setTimeout(() => {
       loadAssistidos(searchTerm);
     }, 350);
 
     return () => clearTimeout(timer);
-  }, [searchTerm]);
+  }, [searchTerm, filter]);
 
   return (
     <div className="flex flex-col gap-3 h-full p-4">

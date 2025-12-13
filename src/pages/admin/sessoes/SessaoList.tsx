@@ -93,21 +93,45 @@ function SessaoList() {
   }, [selected, refreshTrigger, filter]);
 
   useEffect(() => {
-    if (isAssistidoDialogOpen) {
+    if (!isAssistidoDialogOpen) return;
+
+    if (!assistidoSearchTerm) {
+      database
+        .get_assistidos("")
+        .then((data) => setAssistidos(data))
+        .catch((err) => console.error(err));
+      return;
+    }
+
+    const timer = setTimeout(() => {
       database
         .get_assistidos(assistidoSearchTerm)
         .then((data) => setAssistidos(data))
         .catch((err) => console.error(err));
-    }
+    }, 350);
+
+    return () => clearTimeout(timer);
   }, [isAssistidoDialogOpen, assistidoSearchTerm]);
 
   useEffect(() => {
-    if (isProfissionalDialogOpen) {
+    if (!isProfissionalDialogOpen) return;
+
+    if (!profissionalSearchTerm) {
+      database
+        .get_profissionais("")
+        .then((data) => setProfissionais(data))
+        .catch((err) => console.error(err));
+      return;
+    }
+
+    const timer = setTimeout(() => {
       database
         .get_profissionais(profissionalSearchTerm)
         .then((data) => setProfissionais(data))
         .catch((err) => console.error(err));
-    }
+    }, 350);
+
+    return () => clearTimeout(timer);
   }, [isProfissionalDialogOpen, profissionalSearchTerm]);
 
   return (

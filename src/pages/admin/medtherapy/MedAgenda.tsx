@@ -35,9 +35,19 @@ function MedAgenda() {
 
   useEffect(() => {
     setPage(1);
-    loadAgendas(1);
     localStorage.setItem("medagenda_filter_status", filter);
     localStorage.setItem("medagenda_filter_shift", shift);
+
+    if (!searchTerm) {
+      loadAgendas(1, false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      loadAgendas(1, false);
+    }, 350);
+
+    return () => clearTimeout(timer);
   }, [searchTerm, filter, shift]);
 
   const loadAgendas = (pageNum: number = page, append: boolean = false) => {

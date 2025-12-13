@@ -58,7 +58,17 @@ function SessaoForm() {
   ];
 
   useEffect(() => {
-    if (isAssistidoDialogOpen && sessao?.data && sessao?.horario) {
+    if (!isAssistidoDialogOpen || !sessao?.data || !sessao?.horario) return;
+
+    if (!assistidoSearchTerm) {
+      database
+        .get_assistidos_disponiveis(sessao.data, sessao.horario, "")
+        .then((data) => setAssistidos(data))
+        .catch((err) => mostrarNotificacao(err.message, "error"));
+      return;
+    }
+
+    const timer = setTimeout(() => {
       database
         .get_assistidos_disponiveis(
           sessao.data,
@@ -67,7 +77,9 @@ function SessaoForm() {
         )
         .then((data) => setAssistidos(data))
         .catch((err) => mostrarNotificacao(err.message, "error"));
-    }
+    }, 350);
+
+    return () => clearTimeout(timer);
   }, [
     isAssistidoDialogOpen,
     sessao?.data,
@@ -76,7 +88,22 @@ function SessaoForm() {
   ]);
 
   useEffect(() => {
-    if (isProfissionalDialogOpen && sessao?.data && sessao?.horario) {
+    if (!isProfissionalDialogOpen || !sessao?.data || !sessao?.horario) return;
+
+    if (!profissionalSearchTerm) {
+      database
+        .get_profissionais_disponiveis(
+          sessao.data,
+          sessao.horario,
+          isProfissionalPinned ? sessao.assistido_id : null,
+          ""
+        )
+        .then((data) => setProfissionais(data))
+        .catch((err) => mostrarNotificacao(err.message, "error"));
+      return;
+    }
+
+    const timer = setTimeout(() => {
       database
         .get_profissionais_disponiveis(
           sessao.data,
@@ -86,7 +113,9 @@ function SessaoForm() {
         )
         .then((data) => setProfissionais(data))
         .catch((err) => mostrarNotificacao(err.message, "error"));
-    }
+    }, 350);
+
+    return () => clearTimeout(timer);
   }, [
     isProfissionalDialogOpen,
     isProfissionalPinned,

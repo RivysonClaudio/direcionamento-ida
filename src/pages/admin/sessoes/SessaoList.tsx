@@ -79,16 +79,16 @@ function SessaoList() {
   useEffect(() => {
     const dayOffset = selected === "ONTEM" ? -1 : selected === "AMANHÃ" ? 1 : 0;
 
-    database
-      .get_sessoes_by_date(Util.iso_date(dayOffset), filter)
-      .then((data) => {
-        setSessoes(data);
-
-        setTimeout(() => {
-          database
-            .get_sessoes_pendentes_by_date(Util.iso_date(dayOffset))
-            .then((data) => setSessoesPendentes(data));
-        }, 300);
+    Promise.all([
+      database.get_sessoes_by_date(Util.iso_date(dayOffset), filter),
+      database.get_sessoes_pendentes_by_date(Util.iso_date(dayOffset)),
+    ])
+      .then(([sessoesData, pendentesData]) => {
+        setSessoes(sessoesData);
+        setSessoesPendentes(pendentesData);
+      })
+      .catch((err) => {
+        console.error(err);
       });
   }, [selected, refreshTrigger, filter]);
 

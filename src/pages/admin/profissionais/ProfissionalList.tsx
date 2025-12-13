@@ -11,10 +11,15 @@ function ProfissionalList() {
   const database = new DatabaseService();
   const [profissionais, setProfissionais] = useState<IProfissional[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [filter, setFilter] = useState({
-    status: "ATIVO",
-    shift: "",
-    function: "",
+  const [filter, setFilter] = useState(() => {
+    const saved = localStorage.getItem("profissional_filter");
+    return saved
+      ? JSON.parse(saved)
+      : {
+          status: "ATIVO",
+          shift: "",
+          function: "",
+        };
   });
   const [tempFilter, setTempFilter] = useState({
     status: "ATIVO",
@@ -31,6 +36,7 @@ function ProfissionalList() {
   ];
 
   useEffect(() => {
+    localStorage.setItem("profissional_filter", JSON.stringify(filter));
     database
       .get_profissionais("", filter)
       .then((data) => setProfissionais(data))

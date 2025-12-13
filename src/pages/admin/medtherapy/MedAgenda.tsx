@@ -14,11 +14,17 @@ function MedAgenda() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filter, setFilter] = useState<
     "all" | "sync" | "only_in_app" | "only_in_med"
-  >("all");
+  >(() => {
+    const saved = localStorage.getItem("medagenda_filter_status");
+    return (saved as "all" | "sync" | "only_in_app" | "only_in_med") || "all";
+  });
   const [tempFilter, setTempFilter] = useState<
     "all" | "sync" | "only_in_app" | "only_in_med"
   >("all");
-  const [shift, setShift] = useState<"all" | "morning" | "afternoon">("all");
+  const [shift, setShift] = useState<"all" | "morning" | "afternoon">(() => {
+    const saved = localStorage.getItem("medagenda_filter_shift");
+    return (saved as "all" | "morning" | "afternoon") || "all";
+  });
   const [tempShift, setTempShift] = useState<"all" | "morning" | "afternoon">(
     "all"
   );
@@ -31,6 +37,8 @@ function MedAgenda() {
   useEffect(() => {
     setPage(1);
     loadAgendas(1);
+    localStorage.setItem("medagenda_filter_status", filter);
+    localStorage.setItem("medagenda_filter_shift", shift);
   }, [searchTerm, filter, shift]);
 
   const loadAgendas = (pageNum: number = page, append: boolean = false) => {

@@ -2,6 +2,7 @@ const originalFetch = window.fetch;
 
 import type { ErrorResponseDTO } from "../services/database/ErrorResponseDTO";
 import { mostrarNotificacao } from "./notificacao";
+import { setLoadingGlobal } from "../components/LoadingGlobal";
 
 // Expor originalFetch globalmente para casos especiais
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -31,7 +32,18 @@ window.fetch = async function (...args) {
   }
 
   try {
+    // Não mostra loading para requisições de autenticação
+    const isAuthRequest = typeof url === "string" && url.includes("/auth/");
+
+    if (!isAuthRequest) {
+      setLoadingGlobal(true);
+    }
+
     const response = await originalFetch(url, config);
+
+    if (!isAuthRequest) {
+      setLoadingGlobal(false);
+    }
 
     if (!response.ok) {
       const errorResponse: ErrorResponseDTO = await response.json();
@@ -90,6 +102,7 @@ window.fetch = async function (...args) {
 
     return response;
   } catch (error) {
+    setLoadingGlobal(false);
     const errorMsg = `Erro: ${error}`;
     mostrarNotificacao(errorMsg, "error");
     throw error;

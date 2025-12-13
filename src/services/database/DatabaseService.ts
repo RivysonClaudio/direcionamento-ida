@@ -572,11 +572,14 @@ class DatabaseService {
     session_time: string,
     searchTerm: string = ""
   ): Promise<IAssistido[]> {
-    const { data, error } = await this.supabase.rpc("get_available_patients", {
-      p_date: date,
-      p_session_time: session_time,
-      p_search_name: searchTerm,
-    });
+    const { data, error } = await this.supabase.rpc(
+      "get_therapy_available_patients",
+      {
+        p_date: date,
+        p_session_time: session_time,
+        p_search_name: searchTerm,
+      }
+    );
 
     if (error) {
       throw new Error(
@@ -602,7 +605,7 @@ class DatabaseService {
     searchTerm: string = ""
   ): Promise<IProfissional[]> {
     const { data, error } = await this.supabase.rpc(
-      "get_available_professionals",
+      "get_therapy_available_professionals",
       {
         p_date: date,
         p_session_time: session_time,
@@ -632,7 +635,7 @@ class DatabaseService {
     status: "all" | "sync" | "only_in_app" | "only_in_med" = "all",
     shift: "all" | "morning" | "afternoon" = "all",
     page: number = 1,
-    pageSize: number = 50
+    pageSize: number = 15
   ): Promise<{ data: IMedAgenda[]; total: number; hasMore: boolean }> {
     // Build query for data
     let dataQuery = this.supabase.from("vw_med_agenda_sync_aba").select("*");

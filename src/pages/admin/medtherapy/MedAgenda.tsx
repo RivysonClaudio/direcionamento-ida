@@ -32,7 +32,6 @@ function MedAgenda() {
   const [total, setTotal] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
-  const pageSize = 25;
 
   useEffect(() => {
     setPage(1);
@@ -45,17 +44,10 @@ function MedAgenda() {
     if (loading) return;
 
     setLoading(true);
-    console.log("Loading agendas:", {
-      pageNum,
-      append,
-      searchTerm,
-      filter,
-      shift,
-    });
+
     database
-      .get_medtherapy_agenda(searchTerm, filter, shift, pageNum, pageSize)
+      .get_medtherapy_agenda(searchTerm, filter, shift, pageNum)
       .then((result) => {
-        console.log("Result:", result);
         if (append) {
           setAgendas((prev) => [...prev, ...result.data]);
         } else {

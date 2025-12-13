@@ -11,6 +11,7 @@ import AssistidoList from "./pages/admin/assistidos/AssistidoList.tsx";
 import AssistidoForm from "./pages/admin/assistidos/AssistidoForm.tsx";
 import ProfissionalList from "./pages/admin/profissionais/ProfissionalList.tsx";
 import NotificacaoGlobal from "./components/NotificacaoGlobal.tsx";
+import LoadingGlobal from "./components/LoadingGlobal.tsx";
 import ProfissionalForm from "./pages/admin/profissionais/ProfissionalForm.tsx";
 import SessaoForm from "./pages/admin/sessoes/SessaoForm.tsx";
 import AgendaList from "./pages/admin/agendas/AgendaList.tsx";
@@ -24,6 +25,7 @@ import NotFound from "./pages/NotFound.tsx";
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <NotificacaoGlobal />
+    <LoadingGlobal />
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route element={<ProtectedRoute />}>

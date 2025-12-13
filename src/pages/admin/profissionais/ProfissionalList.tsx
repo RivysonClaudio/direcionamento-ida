@@ -5,12 +5,14 @@ import DatabaseService from "../../../services/database/DatabaseService.ts";
 import type { IProfissional } from "./IProfissional.tsx";
 import BottomDialog from "../../../components/BottomDialog";
 import ProfissionalCard from "./ProfissionalCard";
+import { mostrarNotificacao } from "../../../util/notificacao.ts";
 
 function ProfissionalList() {
   const navigate = useNavigate();
   const database = new DatabaseService();
   const [profissionais, setProfissionais] = useState<IProfissional[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState(() => {
     const saved = localStorage.getItem("profissional_filter");
     return saved
@@ -35,13 +37,32 @@ function ProfissionalList() {
     "Coordenador - ABA",
   ];
 
+  const loadProfissionais = async (search: string) => {
+    try {
+      const data = await database.get_profissionais(search, filter);
+      setProfissionais(data);
+    } catch (err) {
+      mostrarNotificacao(
+        "Erro ao carregar profissionais. Tente novamente: " +
+          (err as Error).message,
+        "error"
+      );
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     localStorage.setItem("profissional_filter", JSON.stringify(filter));
-    database
-      .get_profissionais("", filter)
-      .then((data) => setProfissionais(data))
-      .catch((err) => console.error(err));
+    loadProfissionais("");
   }, [filter]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadProfissionais(searchTerm);
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   return (
     <div className="flex flex-col gap-3 h-full p-4">
@@ -78,13 +99,11 @@ function ProfissionalList() {
             type="text"
             placeholder="Buscar por nome..."
             className="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg border border-gray-300 text-neutral-700 outline-none focus:border-gray-400 transition-colors"
-            onChange={async (e) => {
-              const searchTerm = e.target.value;
-              try {
-                const data = await database.get_profissionais(searchTerm);
-                setProfissionais(data);
-              } catch (err) {
-                console.error(err);
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                loadProfissionais(searchTerm);
               }
             }}
           />

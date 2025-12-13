@@ -94,7 +94,13 @@ function ProfissionalList() {
             setTempFilter(filter);
             setIsFilterOpen(true);
           }}
-          className="p-2.5 bg-white rounded-lg border border-gray-300 text-neutral-600 hover:text-neutral-800 hover:border-gray-400 transition-colors"
+          className={`p-2.5 rounded-lg border transition-colors ${
+            filter.status !== "ATIVO" ||
+            filter.shift !== "" ||
+            filter.function !== ""
+              ? "bg-blue-50 border-blue-500 text-blue-600"
+              : "bg-white border-gray-300 text-neutral-600 hover:text-neutral-800 hover:border-gray-400"
+          }`}
           title="Filtrar"
         >
           <Filter size={20} />

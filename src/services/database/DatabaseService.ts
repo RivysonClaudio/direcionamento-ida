@@ -626,16 +626,63 @@ class DatabaseService {
     })) as IProfissional[];
   }
 
-  async get_medtherapy_agenda() {
-    const { data, error } = await this.supabase
-      .from("vw_med_agenda_sync_aba")
-      .select("*");
+  async get_medtherapy_agenda(
+    searchTerm: string = "",
+    status: "all" | "sync" | "only_in_app" | "only_in_med" = "all",
+    shift: "all" | "morning" | "afternoon" = "all",
+    page: number = 1,
+    pageSize: number = 50
+  ): Promise<{ data: IMedAgenda[]; total: number; hasMore: boolean }> {
+    // Build query for data
+    let dataQuery = this.supabase.from("vw_med_agenda_sync_aba").select("*");
 
-    if (error) {
-      throw new Error(`Error fetching medtherapy agenda: ${error.message}`);
+    // Build query for count - select only one column to minimize data transfer
+    let countQuery = this.supabase
+      .from("vw_med_agenda_sync_aba")
+      .select("patient_id");
+
+    if (searchTerm) {
+      const searchCondition = `patient_name.ilike.%${searchTerm}%,med_description.ilike.%${searchTerm}%`;
+      dataQuery = dataQuery.or(searchCondition);
+      countQuery = countQuery.or(searchCondition);
     }
 
-    return data as IMedAgenda[];
+    if (status !== "all") {
+      dataQuery = dataQuery.eq("agenda_med_sync", status);
+      countQuery = countQuery.eq("agenda_med_sync", status);
+    }
+
+    if (shift === "morning") {
+      dataQuery = dataQuery.lte("session_time", "12:00");
+      countQuery = countQuery.lte("session_time", "12:00");
+    } else if (shift === "afternoon") {
+      dataQuery = dataQuery.gt("session_time", "12:00");
+      countQuery = countQuery.gt("session_time", "12:00");
+    }
+
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    // Execute both queries in parallel
+    const [dataResult, countResult] = await Promise.all([
+      dataQuery.order("patient_name", { ascending: true }).range(from, to),
+      countQuery,
+    ]);
+
+    if (dataResult.error) {
+      throw new Error(
+        `Error fetching medtherapy agenda: ${dataResult.error.message}`
+      );
+    }
+
+    const total = countResult.data?.length || 0;
+    const hasMore = dataResult.data && dataResult.data.length === pageSize;
+
+    return {
+      data: (dataResult.data as IMedAgenda[]) || [],
+      total,
+      hasMore,
+    };
   }
 }
 

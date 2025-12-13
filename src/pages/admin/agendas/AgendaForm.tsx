@@ -1,6 +1,6 @@
 import { ChevronLeft, Save, Search } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import type { IAgenda } from "./IAgenda";
 import type { IAssistido } from "../assistidos/IAssistido";
 import type { IProfissional } from "../profissionais/IProfissional";
@@ -12,6 +12,7 @@ import Util from "../../../util/util";
 function AgendaForm() {
   const navigate = useNavigate();
   const { id, agendaId } = useParams<{ id: string; agendaId: string }>();
+  const [searchParams] = useSearchParams();
   const isFromProfissionais =
     window.location.pathname.includes("/profissionais/");
 
@@ -127,6 +128,10 @@ function AgendaForm() {
           database
             .get_assistido_by_id(id)
             .then((assistido) => {
+              const terapia = searchParams.get("terapia");
+              const dia = searchParams.get("dia");
+              const hora = searchParams.get("hora");
+
               setAgenda({
                 id: "",
                 assistido_id: id,
@@ -135,13 +140,19 @@ function AgendaForm() {
                 profissional: "",
                 apoio_id: "",
                 apoio: "",
-                terapia: "",
-                dia_semana: 1,
-                horario: "",
+                terapia:
+                  terapia === "ABA" ? "ABA - Análise do Comport. Aplic." : "",
+                dia_semana: dia ? parseInt(dia, 10) : 1,
+                horario: hora || "",
               });
             })
             .catch((err) => {
               console.error(err);
+
+              const terapia = searchParams.get("terapia");
+              const dia = searchParams.get("dia");
+              const hora = searchParams.get("hora");
+
               setAgenda({
                 id: "",
                 assistido_id: id,
@@ -150,9 +161,10 @@ function AgendaForm() {
                 profissional: "",
                 apoio_id: "",
                 apoio: "",
-                terapia: "",
-                dia_semana: 1,
-                horario: "",
+                terapia:
+                  terapia === "ABA" ? "ABA - Análise do Comport. Aplic." : "",
+                dia_semana: dia ? parseInt(dia, 10) : 1,
+                horario: hora || "",
               });
             });
         }

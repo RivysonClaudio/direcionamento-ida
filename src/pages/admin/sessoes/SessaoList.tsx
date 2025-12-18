@@ -53,6 +53,7 @@ function SessaoList() {
 
   const terapia_options = [
     "ABA - Análise do Comport. Aplic.",
+    "ABA - Análise do Comport. Aplic. (Extra)",
     "Outras terapias",
   ];
 

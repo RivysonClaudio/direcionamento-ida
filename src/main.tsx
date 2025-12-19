@@ -22,6 +22,15 @@ import MedAgenda from "./pages/admin/medtherapy/MedAgenda.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
+// Registrar Service Worker do PWA
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {
+      // Service worker registration failed
+    });
+  });
+}
+
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <NotificacaoGlobal />

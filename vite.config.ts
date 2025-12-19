@@ -17,7 +17,6 @@ export default defineConfig({
         description:
           "Sistema de direcionamento de sessões do Instituto do Autismo",
         theme_color: "#3b82f6",
-        background_color: "#ffffff",
         display: "standalone",
         orientation: "portrait",
         icons: [

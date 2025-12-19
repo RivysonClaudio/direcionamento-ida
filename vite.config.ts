@@ -16,6 +16,7 @@ export default defineConfig({
         short_name: "IDA",
         description:
           "Sistema de direcionamento de sessões do Instituto do Autismo",
+        theme_color: "#ffffff",
         background_color: "#ffffff",
         display: "standalone",
         orientation: "portrait",

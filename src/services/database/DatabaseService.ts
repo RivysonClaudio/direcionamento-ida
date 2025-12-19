@@ -688,6 +688,26 @@ class DatabaseService {
       hasMore,
     };
   }
+
+  async get_profissionais_disponiveis_by_date(
+    date: string
+  ): Promise<Record<string, Array<{ id: string; name: string }>>> {
+    const { data, error } = await this.supabase.rpc(
+      "get_available_professionals_by_time",
+      {
+        run_date: date,
+      }
+    );
+
+    if (error) {
+      throw new Error(
+        `Error fetching profissionais disponíveis: ${error.message}`
+      );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return data;
+  }
 }
 
 export default DatabaseService;

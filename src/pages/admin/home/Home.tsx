@@ -13,7 +13,7 @@ function Home() {
     Record<string, Array<{ id: string; name: string }>>
   >({});
   const [horarioExpandido, setHorarioExpandido] = useState<string | null>(null);
-  const [agendaAberta, setAgendaAberta] = useState(false);
+  const [agendaAberta, setAgendaAberta] = useState(true);
   const [profissionaisAberto, setProfissionaisAberto] = useState(false);
 
   useEffect(() => {

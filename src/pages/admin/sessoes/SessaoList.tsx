@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import SeletorDeBotoes from "../../../components/SeletorDeBotoes";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import SessaoCard from "./SessaoCard";
 import DatabaseService from "../../../services/database/DatabaseService";
 import type { ISessao } from "../sessoes/ISessao";
@@ -46,6 +46,8 @@ function SessaoList() {
   const [selectedProfissionalNome, setSelectedProfissionalNome] = useState(
     localStorage.getItem("sessao_filter_profissional_nome") || ""
   );
+  const assistidoSearchRef = useRef<HTMLInputElement>(null);
+  const profissionalSearchRef = useRef<HTMLInputElement>(null);
 
   const horarios_options = {
     manha: ["08:15", "09:00", "09:45", "10:30", "11:15", "12:00", "12:45"],
@@ -598,11 +600,13 @@ function SessaoList() {
               size={20}
             />
             <input
+              ref={assistidoSearchRef}
               type="text"
               placeholder="Buscar por nome..."
               className="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg border border-gray-300 text-neutral-700 outline-none focus:border-gray-400 transition-colors"
               value={assistidoSearchTerm}
               onChange={(e) => setAssistidoSearchTerm(e.target.value)}
+              onFocus={() => Util.handleFocus(assistidoSearchRef)}
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -680,11 +684,13 @@ function SessaoList() {
               size={20}
             />
             <input
+              ref={profissionalSearchRef}
               type="text"
               placeholder="Buscar por nome..."
               className="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg border border-gray-300 text-neutral-700 outline-none focus:border-gray-400 transition-colors"
               value={profissionalSearchTerm}
               onChange={(e) => setProfissionalSearchTerm(e.target.value)}
+              onFocus={() => Util.handleFocus(profissionalSearchRef)}
             />
           </div>
           <div className="flex flex-col gap-2">

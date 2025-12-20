@@ -304,6 +304,7 @@ class DatabaseService {
         dia_semana: item.week_day,
         horario: item.session_time,
         terapia: item.therapy,
+        sala: item.room,
       })) as IAgenda[];
 
       return data;
@@ -320,6 +321,7 @@ class DatabaseService {
       week_day: agenda.dia_semana,
       session_time: agenda.horario,
       therapy: agenda.terapia,
+      room: agenda.sala || null,
       created_by: user.data.user?.id || null,
       updated_by: user.data.user?.id || null,
     });
@@ -341,6 +343,7 @@ class DatabaseService {
         week_day: agenda.dia_semana,
         session_time: agenda.horario,
         therapy: agenda.terapia,
+        room: agenda.sala || null,
         updated_by: user.data.user?.id || null,
       })
       .eq("id", agenda.id);
@@ -404,6 +407,7 @@ class DatabaseService {
         status: item.status,
         terapia: item.therapy,
         horario: item.session_time,
+        sala: item.room,
         assistido_id: item.patient_id,
         assistido_nome: item.patient_name,
         assistido_situacao: item.patient_status,
@@ -420,36 +424,17 @@ class DatabaseService {
     }
   }
 
-  async get_sessoes_pendentes_by_date(date: string): Promise<ISessao[]> {
+  async get_sessoes_pendentes_by_date(date: string): Promise<number> {
     const query = await this.supabase
       .from("vw_therapy_sessions")
-      .select("*")
+      .select("id")
       .eq("date", date)
-      .eq("status", "PENDENTE")
-      .order("session_time", { ascending: true });
+      .eq("status", "PENDENTE");
 
     if (query.error) {
       throw new Error(`Error fetching sessao: ${query.error.message}`);
     } else {
-      const result = query.data.map((item) => ({
-        id: item.id,
-        data: item.date,
-        status: item.status,
-        terapia: item.therapy,
-        horario: item.session_time,
-        assistido_id: item.patient_id,
-        assistido_nome: item.patient_name,
-        assistido_situacao: item.patient_status,
-        profissional_id: item.professional_id,
-        profissional_situacao: item.professional_status,
-        profissional_nome: item.professional_name,
-        apoio_id: item.helper_id,
-        apoio_nome: item.helper_name,
-        apoio_situacao: item.helper_status,
-        observacoes: item.observations,
-      })) as ISessao[];
-
-      return result;
+      return query.data.length;
     }
   }
 
@@ -472,6 +457,7 @@ class DatabaseService {
         status: item.status,
         terapia: item.therapy,
         horario: item.session_time,
+        sala: item.room,
         assistido_id: item.patient_id,
         assistido_nome: item.patient_name,
         assistido_situacao: item.patient_status,
@@ -501,6 +487,7 @@ class DatabaseService {
       status: sessao.status,
       observation: sessao.observacoes || null,
       origin: "MANUAL",
+      room: sessao.sala || null,
       created_by: user.data.user?.id || null,
       updated_by: user.data.user?.id || null,
     });
@@ -524,6 +511,7 @@ class DatabaseService {
         helper_id: sessao.apoio_id || null,
         status: sessao.status,
         observation: sessao.observacoes || null,
+        room: sessao.sala || null,
         updated_by: user.data.user?.id || null,
       })
       .eq("id", sessao.id);

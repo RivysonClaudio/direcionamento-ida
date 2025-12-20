@@ -23,7 +23,7 @@ function SessaoList() {
   const navigate = useNavigate();
   const database = new DatabaseService();
   const [sessoes, setSessoes] = useState<ISessao[]>([]);
-  const [sessoesPendentes, setSessoesPendentes] = useState<ISessao[]>([]);
+  const [sessoesPendentes, setSessoesPendentes] = useState<number>(0);
   const [selected, setSelected] = useState(
     localStorage.getItem("sessao_selected_day") || "HOJE"
   );
@@ -161,13 +161,13 @@ function SessaoList() {
         </button>
       </div>
 
-      {sessoesPendentes.length > 0 && (
+      {sessoesPendentes > 0 && (
         <div className="flex items-center justify-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg animate-fade-in-out">
           <AlertCircle size={20} className="text-red-500" />
           <h2 className="text-sm font-medium text-red-700">
-            {sessoesPendentes.length} Direcionamento
-            {sessoesPendentes.length > 1 ? "s" : ""} pendente
-            {sessoesPendentes.length > 1 ? "s" : ""}
+            {sessoesPendentes} Direcionamento
+            {sessoesPendentes > 1 ? "s" : ""} pendente
+            {sessoesPendentes > 1 ? "s" : ""}
           </h2>
         </div>
       )}

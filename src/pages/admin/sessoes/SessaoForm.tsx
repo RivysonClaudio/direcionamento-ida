@@ -29,6 +29,7 @@ function SessaoForm() {
   const [isHorarioDialogOpen, setIsHorarioDialogOpen] = useState(false);
   const [isTerapiaDialogOpen, setIsTerapiaDialogOpen] = useState(false);
   const [isAssistidoDialogOpen, setIsAssistidoDialogOpen] = useState(false);
+  const [isSalaDialogOpen, setIsSalaDialogOpen] = useState(false);
   const [assistidoSearchTerm, setAssistidoSearchTerm] = useState("");
   const [profissionalSearchTerm, setProfissionalSearchTerm] = useState("");
   const [apoioSearchTerm, setApoioSearchTerm] = useState("");
@@ -55,6 +56,10 @@ function SessaoForm() {
     "ABA - Análise do Comport. Aplic.",
     "ABA - Análise do Comport. Aplic. (Extra)",
     "Outras terapias",
+  ];
+
+  const salas_options = [
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
   ];
 
   useEffect(() => {
@@ -168,6 +173,7 @@ function SessaoForm() {
         status: "PENDENTE",
         terapia: "",
         horario: "",
+        sala: null,
         assistido_id: "",
         assistido_situacao: "",
         assistido_nome: "",
@@ -397,6 +403,17 @@ function SessaoForm() {
             </button>
           </div>
 
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-neutral-600">Sala</label>
+            <button
+              type="button"
+              onClick={() => setIsSalaDialogOpen(true)}
+              className="p-2.5 rounded-lg border border-gray-300 bg-white text-neutral-700 outline-none hover:border-gray-400 transition-colors text-left"
+            >
+              {sessao?.sala ? `Sala ${sessao.sala}` : "Selecione a sala..."}
+            </button>
+          </div>
+
           <SeletorDeBotoes
             label="Status"
             options={status_options}
@@ -434,6 +451,44 @@ function SessaoForm() {
           </div>
         </form>
       </div>
+
+      <BottomDialog
+        isOpen={isSalaDialogOpen}
+        onClose={() => setIsSalaDialogOpen(false)}
+        title="Selecione a Sala"
+      >
+        <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-5 gap-2">
+            {salas_options.map((sala) => (
+              <button
+                key={sala}
+                onClick={() => {
+                  setSessao({ ...sessao, sala } as ISessao);
+                  setSessaoModified(true);
+                  setIsSalaDialogOpen(false);
+                }}
+                className={`p-3 rounded-lg border text-sm font-medium transition-all ${
+                  sessao?.sala === sala
+                    ? "bg-blue-500 border-blue-500 text-white"
+                    : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                }`}
+              >
+                {sala}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => {
+              setSessao({ ...sessao, sala: null } as ISessao);
+              setSessaoModified(true);
+              setIsSalaDialogOpen(false);
+            }}
+            className="flex-shrink-0 p-3 rounded-lg border border-red-300 bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 transition-all text-center"
+          >
+            Limpar
+          </button>
+        </div>
+      </BottomDialog>
 
       <BottomDialog
         isOpen={isTerapiaDialogOpen}

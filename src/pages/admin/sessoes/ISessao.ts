@@ -4,6 +4,7 @@ export interface ISessao {
   status: "PENDENTE" | "AGENDADO" | "CANCELADO";
   terapia: string;
   horario: string;
+  sala: number | null;
   assistido_id: string;
   assistido_situacao?: string;
   assistido_nome: string;

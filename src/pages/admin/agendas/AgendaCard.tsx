@@ -1,5 +1,4 @@
 import type { IAgenda } from "./IAgenda.tsx";
-import { Clock } from "lucide-react";
 import { useRef } from "react";
 
 function AgendaCard({
@@ -33,30 +32,36 @@ function AgendaCard({
       onTouchEnd={handlePressEnd}
       onMouseDown={handlePressStart}
       onMouseUp={handlePressEnd}
-      className="rounded-lg p-3 bg-(--blue) border border-blue-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer select-none"
+      className="rounded-lg p-2.5 bg-(--blue) border border-blue-200 hover:border-blue-300 transition-colors cursor-pointer select-none"
     >
-      <div className="flex items-center gap-3">
-        <div className="flex flex-col items-center gap-1 min-w-[50px]">
-          <Clock size={16} className="text-neutral-500" />
-          <span className="font-semibold text-sm text-neutral-800">
-            {agenda.horario}
-          </span>
-        </div>
-
-        <div className="flex-1 flex flex-col gap-1 min-w-0">
-          <p className="text-sm font-semibold text-neutral-800">
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-0.5">
+          <p className="text-sm font-medium text-neutral-800">
             {agenda.terapia}
           </p>
-          <div className="flex flex-col gap-0.5 text-xs text-neutral-600">
-            <span>
-              <span className="font-medium">Prof:</span> {agenda.profissional}
+          <span className="text-xs text-neutral-600">
+            <span className="font-semibold">P:</span> {agenda.profissional}
+          </span>
+          {agenda.apoio && (
+            <span className="text-xs text-neutral-600">
+              <span className="font-semibold">A:</span> {agenda.apoio}
             </span>
-            {agenda.apoio && (
-              <span>
-                <span className="font-medium">Apoio:</span> {agenda.apoio}
-              </span>
-            )}
-          </div>
+          )}
+        </div>
+
+        <div className="border-t border-gray-200"></div>
+
+        <div className="flex items-center justify-between text-xs text-neutral-600">
+          {agenda.sala ? (
+            <span>Sala {agenda.sala}</span>
+          ) : (
+            <span>Sem Sala</span>
+          )}
+          {agenda.horario ? (
+            <span>{agenda.horario}</span>
+          ) : (
+            <span>Sem Horário</span>
+          )}
         </div>
       </div>
     </li>

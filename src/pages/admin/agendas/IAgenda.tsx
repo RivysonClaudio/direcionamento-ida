@@ -9,4 +9,5 @@ export interface IAgenda {
   terapia: string;
   dia_semana: number;
   horario: string;
+  sala: number | null;
 }

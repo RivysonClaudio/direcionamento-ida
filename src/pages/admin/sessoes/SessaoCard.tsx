@@ -1,6 +1,5 @@
-import { Clock } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import type { ISessao } from "./ISessao";
+import { useNavigate } from "react-router-dom";
 
 interface SessaoCardProps {
   sessao: ISessao;
@@ -37,36 +36,39 @@ function SessaoCard({ sessao }: SessaoCardProps) {
       onClick={() => navigate(`/admin/sessoes/${sessao.id}`)}
       className={`rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${getStatusColor()}`}
     >
-      <div className="flex items-center gap-3">
-        <div className="flex flex-col items-center gap-1 min-w-[50px]">
-          <Clock size={16} className="text-neutral-500" />
-          <span className="font-semibold text-sm text-neutral-800">
-            {sessao.horario}
-          </span>
-          <div className={`w-2 h-2 rounded-full ${getStatusDot()}`}></div>
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+            <p className="text-sm font-semibold text-neutral-800 truncate">
+              {sessao.assistido_nome}
+            </p>
+            <p className="text-xs text-neutral-600">{sessao.terapia}</p>
+            {sessao.profissional_nome && (
+              <span className="text-xs text-neutral-600">
+                <span className="font-semibold">P:</span>{" "}
+                {sessao.profissional_nome}
+              </span>
+            )}
+            {sessao.apoio_nome && (
+              <span className="text-xs text-neutral-600">
+                <span className="font-semibold">A:</span> {sessao.apoio_nome}
+              </span>
+            )}
+          </div>
+          <div
+            className={`w-2 h-2 rounded-full flex-shrink-0 ml-2 ${getStatusDot()}`}
+          ></div>
         </div>
 
-        <div className="flex-1 flex flex-col gap-1 min-w-0">
-          <p className="text-sm font-semibold text-neutral-800 truncate">
-            {sessao.assistido_nome}
-          </p>
-          <p className="text-xs text-neutral-600">{sessao.terapia}</p>
-          {(sessao.profissional_nome || sessao.apoio_nome) && (
-            <div className="flex flex-col gap-0.5 text-xs text-neutral-500">
-              {sessao.profissional_nome && (
-                <span>
-                  <span className="font-medium">Prof:</span>{" "}
-                  {sessao.profissional_nome}
-                </span>
-              )}
-              {sessao.apoio_nome && (
-                <span>
-                  <span className="font-medium">Apoio:</span>{" "}
-                  {sessao.apoio_nome}
-                </span>
-              )}
-            </div>
+        <div className="border-t border-gray-200"></div>
+
+        <div className="flex items-center justify-between text-xs text-neutral-600">
+          {sessao.sala ? (
+            <span>Sala {sessao.sala}</span>
+          ) : (
+            <span>Sem Sala</span>
           )}
+          <span>{sessao.horario}</span>
         </div>
       </div>
     </li>

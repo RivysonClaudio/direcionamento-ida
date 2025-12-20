@@ -27,6 +27,7 @@ function AgendaForm() {
   const [isTerapiaDialogOpen, setIsTerapiaDialogOpen] = useState(false);
   const [isAssistidoDialogOpen, setIsAssistidoDialogOpen] = useState(false);
   const [isDiaDialogOpen, setIsDiaDialogOpen] = useState(false);
+  const [isSalaDialogOpen, setIsSalaDialogOpen] = useState(false);
 
   const [assistidos, setAssistidos] = useState<IAssistido[]>([]);
   const [assistidoSearchTerm, setAssistidoSearchTerm] = useState("");
@@ -48,6 +49,10 @@ function AgendaForm() {
   const terapia_options = [
     "ABA - Análise do Comport. Aplic.",
     "Outras terapias",
+  ];
+
+  const salas_options = [
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
   ];
 
   const dias_semana = [
@@ -106,6 +111,7 @@ function AgendaForm() {
                 terapia: "",
                 dia_semana: 1,
                 horario: "",
+                sala: null,
               });
             })
             .catch((err) => {
@@ -121,6 +127,7 @@ function AgendaForm() {
                 terapia: "",
                 dia_semana: 1,
                 horario: "",
+                sala: null,
               });
             });
         } else {
@@ -144,6 +151,7 @@ function AgendaForm() {
                   terapia === "ABA" ? "ABA - Análise do Comport. Aplic." : "",
                 dia_semana: dia ? parseInt(dia, 10) : 1,
                 horario: hora || "",
+                sala: null,
               });
             })
             .catch((err) => {
@@ -165,6 +173,7 @@ function AgendaForm() {
                   terapia === "ABA" ? "ABA - Análise do Comport. Aplic." : "",
                 dia_semana: dia ? parseInt(dia, 10) : 1,
                 horario: hora || "",
+                sala: null,
               });
             });
         }
@@ -180,6 +189,7 @@ function AgendaForm() {
           terapia: "",
           dia_semana: 1,
           horario: "",
+          sala: null,
         });
       }
     }
@@ -334,6 +344,17 @@ function AgendaForm() {
               {agenda?.apoio || "Selecione um apoio (opcional)..."}
             </button>
           </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-neutral-600">Sala</label>
+            <button
+              type="button"
+              onClick={() => setIsSalaDialogOpen(true)}
+              className="p-2.5 rounded-lg border border-gray-300 bg-white text-neutral-700 outline-none hover:border-gray-400 transition-colors text-left"
+            >
+              {agenda?.sala ? `Sala ${agenda.sala}` : "Selecione a sala..."}
+            </button>
+          </div>
         </form>
       </div>
 
@@ -360,6 +381,44 @@ function AgendaForm() {
               {dia.label}
             </button>
           ))}
+        </div>
+      </BottomDialog>
+
+      <BottomDialog
+        isOpen={isSalaDialogOpen}
+        onClose={() => setIsSalaDialogOpen(false)}
+        title="Selecione a Sala"
+      >
+        <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-5 gap-2">
+            {salas_options.map((sala) => (
+              <button
+                key={sala}
+                onClick={() => {
+                  setAgenda({ ...agenda, sala } as IAgenda);
+                  setAgendaModified(true);
+                  setIsSalaDialogOpen(false);
+                }}
+                className={`p-3 rounded-lg border text-sm font-medium transition-all ${
+                  agenda?.sala === sala
+                    ? "bg-blue-500 border-blue-500 text-white"
+                    : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                }`}
+              >
+                {sala}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => {
+              setAgenda({ ...agenda, sala: null } as IAgenda);
+              setAgendaModified(true);
+              setIsSalaDialogOpen(false);
+            }}
+            className="flex-shrink-0 p-3 rounded-lg border border-red-300 bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 transition-all text-center"
+          >
+            Limpar
+          </button>
         </div>
       </BottomDialog>
 

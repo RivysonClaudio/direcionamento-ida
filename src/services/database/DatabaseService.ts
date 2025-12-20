@@ -241,6 +241,7 @@ class DatabaseService {
       .update({
         name: profissional.nome,
         status: profissional.status,
+        function: profissional.funcao,
         shift: profissional.turno,
         updated_by: user.data.user?.id || null,
       })

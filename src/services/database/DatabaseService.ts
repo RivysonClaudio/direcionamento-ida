@@ -730,6 +730,16 @@ class DatabaseService {
 
     return data?.length || 0;
   }
+
+  async update_password(newPassword: string): Promise<void> {
+    const { error } = await this.supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) {
+      throw new Error(`Error updating password: ${error.message}`);
+    }
+  }
 }
 
 export default DatabaseService;

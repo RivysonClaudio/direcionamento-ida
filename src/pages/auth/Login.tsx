@@ -8,11 +8,18 @@ import { mostrarNotificacao } from "../../util/notificacao";
 
 function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(() => {
+    return localStorage.getItem("rememberedEmail") || "";
+  });
+  const [password, setPassword] = useState(() => {
+    return localStorage.getItem("rememberedPassword") || "";
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(() => {
+    return localStorage.getItem("rememberMe") === "true";
+  });
   const database = new DatabaseService();
 
   const supabase = createClient(
@@ -40,6 +47,17 @@ function Login() {
 
       if (data.session) {
         localStorage.setItem("authToken", data.session.access_token);
+
+        // Salvar credenciais se "lembrar de mim" estiver marcado
+        if (rememberMe) {
+          localStorage.setItem("rememberedEmail", email);
+          localStorage.setItem("rememberedPassword", password);
+          localStorage.setItem("rememberMe", "true");
+        } else {
+          localStorage.removeItem("rememberedEmail");
+          localStorage.removeItem("rememberedPassword");
+          localStorage.removeItem("rememberMe");
+        }
 
         const userInfo = await database.get_profissional_by_userid(
           data.session.user.id
@@ -107,6 +125,21 @@ function Login() {
           >
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
+        </div>
+        <div className="flex items-center w-full gap-2">
+          <input
+            type="checkbox"
+            id="rememberMe"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+          />
+          <label
+            htmlFor="rememberMe"
+            className="text-sm text-neutral-700 cursor-pointer"
+          >
+            Lembrar de mim
+          </label>
         </div>
         {error && <p className="text-sm text-red-500">{error}</p>}
         <button

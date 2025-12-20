@@ -58,7 +58,7 @@ function Home() {
       <div className="h-dvh overflow-auto pb-4 flex flex-col gap-4">
         <div className="flex flex-col gap-3 bg-white rounded-lg border border-gray-200 shadow-sm p-4">
           <h3 className="text-sm font-semibold text-neutral-800">
-            Sessões Extras
+            Contagem de Sessões ABA Extras
           </h3>
           <div className="flex items-center gap-3">
             <div className="flex-1">

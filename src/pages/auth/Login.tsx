@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { type FormEvent, useRef, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
 import { Eye, EyeOff } from "lucide-react";
 import DatabaseService from "../../services/database/DatabaseService";
 import Util from "../../util/util";
@@ -20,12 +19,7 @@ function Login() {
   const [rememberMe, setRememberMe] = useState(() => {
     return localStorage.getItem("rememberMe") === "true";
   });
-  const database = new DatabaseService();
-
-  const supabase = createClient(
-    import.meta.env.VITE_SUPABASE_URL,
-    import.meta.env.VITE_SUPABASE_KEY
-  );
+  const database = DatabaseService.getInstance();
 
   const inputRef = useRef(null);
 
@@ -35,19 +29,9 @@ function Login() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        setError(error.message);
-        return;
-      }
+      const data = await database.sign_in(email, password);
 
       if (data.session) {
-        localStorage.setItem("authToken", data.session.access_token);
-
         // Salvar credenciais se "lembrar de mim" estiver marcado
         if (rememberMe) {
           localStorage.setItem("rememberedEmail", email);
@@ -65,6 +49,10 @@ function Login() {
 
         if (userInfo) {
           localStorage.setItem("user", userInfo.nome);
+          localStorage.setItem("userId", userInfo.id);
+          if (userInfo.role) {
+            localStorage.setItem("userRole", userInfo.role);
+          }
 
           if (userInfo?.role == "ADMIN") {
             navigate("/admin");
@@ -75,11 +63,10 @@ function Login() {
         }
       }
     } catch (err) {
-      setError("Erro ao fazer login. Tente novamente.");
-      mostrarNotificacao(
-        "Erro ao fazer login. Tente novamente. " + err,
-        "error"
-      );
+      const errorMessage =
+        err instanceof Error ? err.message : "Erro ao fazer login.";
+      setError(errorMessage);
+      mostrarNotificacao("Erro ao fazer login. " + errorMessage, "error");
     } finally {
       setLoading(false);
     }

@@ -23,7 +23,7 @@ function AppShell() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const database = new DatabaseService();
+  const database = DatabaseService.getInstance();
 
   const isAdmin = location.pathname.startsWith("/admin");
   const isMember = location.pathname.startsWith("/member");
@@ -163,10 +163,25 @@ function AppShell() {
             <span>Alterar Senha</span>
           </button>
           <button
-            onClick={() => {
-              localStorage.removeItem("authToken");
-              localStorage.removeItem("user");
-              navigate("/login");
+            onClick={async () => {
+              try {
+                // Tenta fazer logout no Supabase, mas continua mesmo se falhar
+                await database.sign_out().catch((err) => {
+                  console.warn(
+                    "Supabase logout failed, proceeding anyway:",
+                    err
+                  );
+                });
+              } catch (error) {
+                console.warn("Error during logout:", error);
+              } finally {
+                // Sempre limpa o localStorage e redireciona
+                localStorage.removeItem("user");
+                localStorage.removeItem("userId");
+                localStorage.removeItem("userRole");
+                localStorage.removeItem("authToken");
+                navigate("/login");
+              }
             }}
             className="flex items-center gap-3 p-3 rounded-lg border border-red-300 bg-red-50 text-red-700 hover:bg-red-100 transition-colors"
           >

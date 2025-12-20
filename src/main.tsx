@@ -21,6 +21,21 @@ import AppShell from "./components/AppShell.tsx";
 import MedAgenda from "./pages/admin/medtherapy/MedAgenda.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import DatabaseService from "./services/database/DatabaseService.ts";
+
+// Setup auth state listener
+const database = DatabaseService.getInstance();
+const supabase = database.getSupabaseClient();
+
+supabase.auth.onAuthStateChange((event) => {
+  if (event === "SIGNED_OUT") {
+    localStorage.removeItem("user");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("authToken");
+    window.location.href = "/login";
+  }
+});
 
 // Registrar Service Worker do PWA
 if ("serviceWorker" in navigator) {

@@ -14,6 +14,7 @@ window.fetch = async function (...args) {
   let [url, config] = args;
 
   const token = localStorage.getItem("authToken");
+
   if (config) {
     config.headers = {
       ...config.headers,

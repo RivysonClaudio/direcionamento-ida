@@ -6,6 +6,7 @@ import type { ISessao } from "../../pages/admin/sessoes/ISessao";
 import type { IMedAgenda } from "../../pages/admin/medtherapy/IMedAgenda";
 
 class DatabaseService {
+  private static instance: DatabaseService;
   private supabaseUrl: string;
   private supabaseKey: string;
   private supabase: SupabaseClient;
@@ -20,7 +21,24 @@ class DatabaseService {
       );
     }
 
-    this.supabase = createClient(this.supabaseUrl, this.supabaseKey);
+    this.supabase = createClient(this.supabaseUrl, this.supabaseKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        storage: window.localStorage,
+      },
+    });
+  }
+
+  static getInstance(): DatabaseService {
+    if (!DatabaseService.instance) {
+      DatabaseService.instance = new DatabaseService();
+    }
+    return DatabaseService.instance;
+  }
+
+  getSupabaseClient(): SupabaseClient {
+    return this.supabase;
   }
 
   async get_profissional_by_userid(id: string): Promise<IProfissional | null> {
@@ -729,6 +747,49 @@ class DatabaseService {
     }
 
     return data?.length || 0;
+  }
+
+  async sign_in(email: string, password: string) {
+    const { data, error } = await this.supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    localStorage.setItem("authToken", data.session?.access_token || "");
+
+    return data;
+  }
+
+  async sign_out() {
+    const { error } = await this.supabase.auth.signOut();
+
+    if (error) {
+      throw error;
+    }
+  }
+
+  async get_session() {
+    const { data, error } = await this.supabase.auth.getSession();
+
+    if (error) {
+      throw error;
+    }
+
+    return data.session;
+  }
+
+  async get_current_user() {
+    const { data, error } = await this.supabase.auth.getUser();
+
+    if (error) {
+      throw error;
+    }
+
+    return data.user;
   }
 
   async update_password(newPassword: string): Promise<void> {

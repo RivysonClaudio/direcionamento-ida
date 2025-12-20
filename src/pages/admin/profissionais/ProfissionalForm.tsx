@@ -1,5 +1,5 @@
 import { ChevronLeft, Save } from "lucide-react";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { IProfissional } from "./IProfissional";
 import DatabaseService from "../../../services/database/DatabaseService";
@@ -7,6 +7,7 @@ import SeletorDeBotoes from "../../../components/SeletorDeBotoes";
 import type { IAgenda } from "../agendas/IAgenda";
 import BottomDialog from "../../../components/BottomDialog";
 import { mostrarNotificacao } from "../../../util/notificacao";
+import Util from "../../../util/util";
 
 function ProfissionalForm() {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ function ProfissionalForm() {
   const [profissionalModified, setProfissionalModified] = useState(false);
   const [statusChanged, setStatusChanged] = useState(false);
   const [agendaResumo, setAgendaResumo] = useState<IAgenda[]>([]);
+  const observacoesRef = useRef<HTMLTextAreaElement>(null);
   const [isFuncaoDialogOpen, setIsFuncaoDialogOpen] = useState(false);
 
   const status_options = ["ATIVO", "INATIVO"];
@@ -64,6 +66,7 @@ function ProfissionalForm() {
         funcao: "",
         status: "ATIVO",
         role: "MEMBER",
+        observacoes: "",
       });
     }
   }, [id]);
@@ -214,6 +217,32 @@ function ProfissionalForm() {
               setProfissionalModified(true);
             }}
           />
+
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor="observacoes"
+              className="text-sm font-medium text-neutral-600"
+            >
+              Observações
+            </label>
+            <textarea
+              ref={observacoesRef}
+              id="observacoes"
+              name="observacoes"
+              rows={4}
+              className="p-2.5 rounded-lg border border-gray-300 bg-white text-neutral-700 outline-none focus:border-gray-400 transition-colors resize-none"
+              placeholder="Observações sobre o profissional..."
+              value={profissional?.observacoes || ""}
+              onFocus={() => Util.handleFocus(observacoesRef)}
+              onChange={(e) => {
+                setProfissional({
+                  ...profissional,
+                  observacoes: e.target.value,
+                } as IProfissional);
+                setProfissionalModified(true);
+              }}
+            />
+          </div>
         </form>
 
         {id !== "novo" && profissional?.turno && (

@@ -43,6 +43,7 @@ class DatabaseService {
         turno: item.shift,
         funcao: item.function,
         role: item.role,
+        observacoes: item.observacoes,
       };
 
       return result;
@@ -183,6 +184,7 @@ class DatabaseService {
         funcao: item.function,
         turno: item.shift,
         role: item.role,
+        observacoes: item.observation,
       })) as IProfissional[];
 
       return data;
@@ -209,6 +211,7 @@ class DatabaseService {
         turno: item.shift,
         funcao: item.function,
         role: item.role,
+        observacoes: item.observation,
       };
 
       return result;
@@ -224,6 +227,7 @@ class DatabaseService {
       shift: profissional.turno ?? null,
       function: profissional.funcao ?? null,
       role: profissional.role ?? null,
+      observation: profissional.observacoes ?? null,
       created_by: user.data.user?.id || null,
       updated_by: user.data.user?.id || null,
     });
@@ -243,6 +247,7 @@ class DatabaseService {
         status: profissional.status,
         function: profissional.funcao,
         shift: profissional.turno,
+        observation: profissional.observacoes,
         updated_by: user.data.user?.id || null,
       })
       .eq("id", profissional.id);
@@ -372,12 +377,14 @@ class DatabaseService {
       profissional_id?: string;
       therapy?: string;
       session_time?: string;
+      sala?: string | number;
     } = {
       status: "",
       patient_id: "",
       profissional_id: "",
       therapy: "",
       session_time: "",
+      sala: "",
     }
   ): Promise<ISessao[]> {
     let query = this.supabase
@@ -395,6 +402,7 @@ class DatabaseService {
     if (filter.therapy) query = query.eq("therapy", filter.therapy);
     if (filter.session_time)
       query = query.eq("session_time", filter.session_time);
+    if (filter.sala) query = query.eq("room", filter.sala);
 
     const result = await query.order("session_time", { ascending: true });
 

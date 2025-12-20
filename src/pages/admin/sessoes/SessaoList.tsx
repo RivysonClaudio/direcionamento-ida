@@ -32,6 +32,7 @@ function SessaoList() {
   const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
   const [isHorarioDialogOpen, setIsHorarioDialogOpen] = useState(false);
   const [isTerapiaDialogOpen, setIsTerapiaDialogOpen] = useState(false);
+  const [isSalaDialogOpen, setIsSalaDialogOpen] = useState(false);
   const [isAssistidoDialogOpen, setIsAssistidoDialogOpen] = useState(false);
   const [assistidos, setAssistidos] = useState<IAssistido[]>([]);
   const [assistidoSearchTerm, setAssistidoSearchTerm] = useState("");
@@ -57,6 +58,10 @@ function SessaoList() {
     "Outras terapias",
   ];
 
+  const salas_options = [
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+  ];
+
   const [filter, setFilter] = useState(() => {
     const saved = localStorage.getItem("sessao_filter");
     return saved
@@ -67,6 +72,7 @@ function SessaoList() {
           profissional_id: "",
           therapy: "",
           session_time: "",
+          sala: "",
         };
   });
   const [tempFilter, setTempFilter] = useState({
@@ -75,6 +81,7 @@ function SessaoList() {
     profissional_id: "",
     therapy: "",
     session_time: "",
+    sala: "",
   });
 
   useEffect(() => {
@@ -230,7 +237,8 @@ function SessaoList() {
             filter.session_time ||
             filter.therapy ||
             filter.patient_id ||
-            filter.profissional_id
+            filter.profissional_id ||
+            filter.sala
               ? "bg-blue-50 border-blue-500 text-blue-600"
               : "bg-white border-gray-300 text-neutral-600 hover:bg-gray-50 hover:border-gray-400"
           }`}
@@ -244,122 +252,137 @@ function SessaoList() {
         onClose={() => setIsFilterDialogOpen(false)}
         title="Filtros"
       >
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-neutral-700">
-              Status
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => setTempFilter({ ...tempFilter, status: "" })}
-                className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
-                  tempFilter.status === ""
-                    ? "bg-blue-500 border-blue-500 text-white"
-                    : "border-gray-300 hover:bg-gray-50"
-                }`}
-              >
-                Todos
-              </button>
-              <button
-                onClick={() =>
-                  setTempFilter({ ...tempFilter, status: "PENDENTE" })
+        <>
+          <div className="flex flex-col gap-4 pb-20">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-neutral-700">
+                Status
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setTempFilter({ ...tempFilter, status: "" })}
+                  className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
+                    tempFilter.status === ""
+                      ? "bg-blue-500 border-blue-500 text-white"
+                      : "border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  Todos
+                </button>
+                <button
+                  onClick={() =>
+                    setTempFilter({ ...tempFilter, status: "PENDENTE" })
+                  }
+                  className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
+                    tempFilter.status === "PENDENTE"
+                      ? "bg-blue-500 border-blue-500 text-white"
+                      : "border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  Pendente
+                </button>
+                <button
+                  onClick={() =>
+                    setTempFilter({ ...tempFilter, status: "AGENDADO" })
+                  }
+                  className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
+                    tempFilter.status === "AGENDADO"
+                      ? "bg-blue-500 border-blue-500 text-white"
+                      : "border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  Agendado
+                </button>
+                <button
+                  onClick={() =>
+                    setTempFilter({ ...tempFilter, status: "CANCELADO" })
+                  }
+                  className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
+                    tempFilter.status === "CANCELADO"
+                      ? "bg-blue-500 border-blue-500 text-white"
+                      : "border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  Cancelado
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-neutral-700">
+                Horário
+              </label>
+              <input
+                type="text"
+                readOnly
+                value={tempFilter.session_time || "Todos"}
+                onClick={() => setIsHorarioDialogOpen(true)}
+                className="py-2 px-4 rounded-lg border border-gray-300 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-neutral-700">
+                Terapia
+              </label>
+              <input
+                type="text"
+                readOnly
+                value={tempFilter.therapy || "Todas"}
+                onClick={() => setIsTerapiaDialogOpen(true)}
+                className="py-2 px-4 rounded-lg border border-gray-300 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-neutral-700">
+                Sala
+              </label>
+              <input
+                type="text"
+                readOnly
+                value={tempFilter.sala || "Todas"}
+                onClick={() => setIsSalaDialogOpen(true)}
+                className="py-2 px-4 rounded-lg border border-gray-300 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-neutral-700">
+                Assistido
+              </label>
+              <input
+                type="text"
+                readOnly
+                value={
+                  tempFilter.patient_id
+                    ? selectedAssistidoNome || "Selecionado"
+                    : "Todos"
                 }
-                className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
-                  tempFilter.status === "PENDENTE"
-                    ? "bg-blue-500 border-blue-500 text-white"
-                    : "border-gray-300 hover:bg-gray-50"
-                }`}
-              >
-                Pendente
-              </button>
-              <button
-                onClick={() =>
-                  setTempFilter({ ...tempFilter, status: "AGENDADO" })
+                onClick={() => setIsAssistidoDialogOpen(true)}
+                className="py-2 px-4 rounded-lg border border-gray-300 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-neutral-700">
+                Profissional
+              </label>
+              <input
+                type="text"
+                readOnly
+                value={
+                  tempFilter.profissional_id
+                    ? selectedProfissionalNome || "Selecionado"
+                    : "Todos"
                 }
-                className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
-                  tempFilter.status === "AGENDADO"
-                    ? "bg-blue-500 border-blue-500 text-white"
-                    : "border-gray-300 hover:bg-gray-50"
-                }`}
-              >
-                Agendado
-              </button>
-              <button
-                onClick={() =>
-                  setTempFilter({ ...tempFilter, status: "CANCELADO" })
-                }
-                className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
-                  tempFilter.status === "CANCELADO"
-                    ? "bg-blue-500 border-blue-500 text-white"
-                    : "border-gray-300 hover:bg-gray-50"
-                }`}
-              >
-                Cancelado
-              </button>
+                onClick={() => setIsProfissionalDialogOpen(true)}
+                className="py-2 px-4 rounded-lg border border-gray-300 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+              />
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-neutral-700">
-              Horário
-            </label>
-            <input
-              type="text"
-              readOnly
-              value={tempFilter.session_time || "Todos"}
-              onClick={() => setIsHorarioDialogOpen(true)}
-              className="py-2 px-4 rounded-lg border border-gray-300 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-neutral-700">
-              Terapia
-            </label>
-            <input
-              type="text"
-              readOnly
-              value={tempFilter.therapy || "Todas"}
-              onClick={() => setIsTerapiaDialogOpen(true)}
-              className="py-2 px-4 rounded-lg border border-gray-300 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-neutral-700">
-              Assistido
-            </label>
-            <input
-              type="text"
-              readOnly
-              value={
-                tempFilter.patient_id
-                  ? selectedAssistidoNome || "Selecionado"
-                  : "Todos"
-              }
-              onClick={() => setIsAssistidoDialogOpen(true)}
-              className="py-2 px-4 rounded-lg border border-gray-300 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-neutral-700">
-              Profissional
-            </label>
-            <input
-              type="text"
-              readOnly
-              value={
-                tempFilter.profissional_id
-                  ? selectedProfissionalNome || "Selecionado"
-                  : "Todos"
-              }
-              onClick={() => setIsProfissionalDialogOpen(true)}
-              className="py-2 px-4 rounded-lg border border-gray-300 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
-            />
-          </div>
-
-          <div className="flex gap-2 pt-4">
+          <div className="fixed bottom-0 left-0 right-0 flex gap-2 p-4 bg-white border-t border-gray-200">
             <button
               onClick={() => {
                 const defaultFilter = {
@@ -368,6 +391,7 @@ function SessaoList() {
                   profissional_id: "",
                   therapy: "",
                   session_time: "",
+                  sala: "",
                 };
                 setTempFilter(defaultFilter);
                 setFilter(defaultFilter);
@@ -399,7 +423,7 @@ function SessaoList() {
               Aplicar
             </button>
           </div>
-        </div>
+        </>
       </BottomDialog>
 
       <BottomDialog
@@ -516,6 +540,49 @@ function SessaoList() {
               {terapia}
             </button>
           ))}
+        </div>
+      </BottomDialog>
+
+      <BottomDialog
+        isOpen={isSalaDialogOpen}
+        onClose={() => setIsSalaDialogOpen(false)}
+        title="Selecionar Sala"
+      >
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => {
+              setTempFilter({ ...tempFilter, sala: "" });
+              setIsSalaDialogOpen(false);
+            }}
+            className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
+              tempFilter.sala === ""
+                ? "bg-blue-500 border-blue-500 text-white"
+                : "border-gray-300 hover:bg-gray-50"
+            }`}
+          >
+            Todas
+          </button>
+          <div className="grid grid-cols-5 gap-2">
+            {salas_options.map((sala) => (
+              <button
+                key={sala}
+                onClick={() => {
+                  setTempFilter({
+                    ...tempFilter,
+                    sala: tempFilter.sala === String(sala) ? "" : String(sala),
+                  });
+                  setIsSalaDialogOpen(false);
+                }}
+                className={`py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
+                  tempFilter.sala === String(sala)
+                    ? "bg-blue-500 border-blue-500 text-white"
+                    : "border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                {sala}
+              </button>
+            ))}
+          </div>
         </div>
       </BottomDialog>
 

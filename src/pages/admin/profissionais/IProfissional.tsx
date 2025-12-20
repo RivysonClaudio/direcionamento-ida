@@ -5,4 +5,5 @@ export interface IProfissional {
   turno: string;
   funcao: string | null;
   role: string | null;
+  observacoes: string | null;
 }

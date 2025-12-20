@@ -697,6 +697,31 @@ class DatabaseService {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data;
   }
+
+  async get_extra_sessions_count_by_month(
+    year: number,
+    month: number
+  ): Promise<number> {
+    // Calculate start and end dates for the month
+    const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+    const nextMonth = month === 12 ? 1 : month + 1;
+    const nextYear = month === 12 ? year + 1 : year;
+    const endDate = `${nextYear}-${String(nextMonth).padStart(2, "0")}-01`;
+
+    const { data, error } = await this.supabase
+      .from("therapy_sessions")
+      .select("id", { count: "exact" })
+      .eq("status", "AGENDADO")
+      .gte("date", startDate)
+      .lt("date", endDate)
+      .like("therapy", "%(Extra)");
+
+    if (error) {
+      throw new Error(`Error fetching extra sessions count: ${error.message}`);
+    }
+
+    return data?.length || 0;
+  }
 }
 
 export default DatabaseService;

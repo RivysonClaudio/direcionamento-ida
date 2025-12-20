@@ -2,6 +2,7 @@ import DatabaseService from "../../../services/database/DatabaseService.ts";
 import Util from "../../../util/util.tsx";
 import { useEffect, useState } from "react";
 import SeletorDeBotoes from "../../../components/SeletorDeBotoes.tsx";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 function Home() {
   const user = localStorage.getItem("user")?.split(" ")[0] || "User";
@@ -15,6 +16,13 @@ function Home() {
   const [horarioExpandido, setHorarioExpandido] = useState<string | null>(null);
   const [agendaAberta, setAgendaAberta] = useState(true);
   const [profissionaisAberto, setProfissionaisAberto] = useState(false);
+  const [extraSessionsCount, setExtraSessionsCount] = useState<number>(0);
+  const [selectedPeriod, setSelectedPeriod] = useState<string>(
+    `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(
+      2,
+      "0"
+    )}`
+  );
 
   useEffect(() => {
     const database = new DatabaseService();
@@ -28,6 +36,16 @@ function Home() {
       .then((data) => setProfissionaisLivres(data));
   }, []);
 
+  useEffect(() => {
+    const database = new DatabaseService();
+    const [year, month] = selectedPeriod.split("-").map(Number);
+
+    database
+      .get_extra_sessions_count_by_month(year, month)
+      .then((count) => setExtraSessionsCount(count))
+      .catch((err) => console.error(err));
+  }, [selectedPeriod]);
+
   return (
     <div className="flex flex-col gap-4 h-full p-4 overflow-auto">
       <div className="relative py-2 flex items-center justify-center">
@@ -38,14 +56,44 @@ function Home() {
       </div>
 
       <div className="h-dvh overflow-auto pb-4 flex flex-col gap-4">
+        <div className="flex flex-col gap-3 bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+          <h3 className="text-sm font-semibold text-neutral-800">
+            Sessões Extras
+          </h3>
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <label className="text-xs text-neutral-600 mb-1 block">
+                Período
+              </label>
+              <input
+                type="month"
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value)}
+                className="w-full p-2 rounded-lg border border-gray-300 bg-white text-sm text-neutral-700 outline-none focus:border-gray-400 transition-colors"
+              />
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-xs text-neutral-600 mb-1">Total</span>
+              <span className="text-2xl font-bold text-blue-600">
+                {extraSessionsCount}
+              </span>
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-col gap-3 bg-white rounded-lg border border-gray-200 shadow-sm">
           <button
             onClick={() => setAgendaAberta(!agendaAberta)}
-            className="w-full p-3 text-left hover:bg-gray-50 transition-colors rounded-t-lg"
+            className="w-full p-3 text-left hover:bg-gray-50 transition-colors rounded-t-lg flex items-center justify-between"
           >
             <h3 className="text-sm font-semibold text-neutral-800">
               Agenda Semanal por Horário
             </h3>
+            {agendaAberta ? (
+              <ChevronUp size={18} className="text-neutral-600" />
+            ) : (
+              <ChevronDown size={18} className="text-neutral-600" />
+            )}
           </button>
           {agendaAberta && (
             <div className="px-3 pb-3 flex flex-col gap-3">
@@ -129,11 +177,16 @@ function Home() {
         <div className="flex flex-col gap-3 bg-white rounded-lg border border-gray-200 shadow-sm">
           <button
             onClick={() => setProfissionaisAberto(!profissionaisAberto)}
-            className="w-full p-3 text-left hover:bg-gray-50 transition-colors rounded-t-lg"
+            className="w-full p-3 text-left hover:bg-gray-50 transition-colors rounded-t-lg flex items-center justify-between"
           >
             <h3 className="text-sm font-semibold text-neutral-800">
               Profissionais Disponíveis - Hoje
             </h3>
+            {profissionaisAberto ? (
+              <ChevronUp size={18} className="text-neutral-600" />
+            ) : (
+              <ChevronDown size={18} className="text-neutral-600" />
+            )}
           </button>
           {profissionaisAberto && (
             <div className="px-3 pb-3 flex flex-col gap-3">

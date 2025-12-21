@@ -18,13 +18,13 @@ function AssistidoList() {
     return saved
       ? JSON.parse(saved)
       : {
-          status: "ATIVO",
+          status: "",
           shift: "",
           support: "",
         };
   });
   const [tempFilter, setTempFilter] = useState({
-    status: "ATIVO",
+    status: "",
     shift: "",
     support: "",
   });
@@ -105,7 +105,7 @@ function AssistidoList() {
             setIsFilterOpen(true);
           }}
           className={`p-2.5 rounded-lg border transition-colors ${
-            filter.status !== "ATIVO" || filter.shift || filter.support
+            filter.status !== "" || filter.shift || filter.support
               ? "bg-blue-50 border-blue-500 text-blue-600"
               : "bg-white border-gray-300 text-neutral-600 hover:text-neutral-800 hover:border-gray-400"
           }`}
@@ -269,7 +269,7 @@ function AssistidoList() {
             <button
               onClick={() => {
                 const defaultFilter = {
-                  status: "ATIVO",
+                  status: "",
                   shift: "",
                   support: "",
                 };

@@ -18,13 +18,13 @@ function ProfissionalList() {
     return saved
       ? JSON.parse(saved)
       : {
-          status: "ATIVO",
+          status: "",
           shift: "",
           function: "",
         };
   });
   const [tempFilter, setTempFilter] = useState({
-    status: "ATIVO",
+    status: "",
     shift: "",
     function: "",
   });
@@ -116,7 +116,7 @@ function ProfissionalList() {
             setIsFilterOpen(true);
           }}
           className={`p-2.5 rounded-lg border transition-colors ${
-            filter.status !== "ATIVO" ||
+            filter.status !== "" ||
             filter.shift !== "" ||
             filter.function !== ""
               ? "bg-blue-50 border-blue-500 text-blue-600"
@@ -247,7 +247,7 @@ function ProfissionalList() {
             <button
               onClick={() => {
                 const defaultFilter = {
-                  status: "ATIVO",
+                  status: "",
                   shift: "",
                   function: "",
                 };

@@ -9,7 +9,7 @@ import {
   CalendarSync,
   KeyRound,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BottomDialog from "./BottomDialog";
 import DatabaseService from "../services/database/DatabaseService";
 import { mostrarNotificacao } from "../util/notificacao";
@@ -27,6 +27,13 @@ function AppShell() {
 
   const isAdmin = location.pathname.startsWith("/admin");
   const isMember = location.pathname.startsWith("/member");
+
+  // Limpar o dia selecionado quando sair de rotas /agenda
+  useEffect(() => {
+    if (!location.pathname.includes("/agenda")) {
+      sessionStorage.removeItem("agenda_selectedDay");
+    }
+  }, [location.pathname]);
 
   const isActive = (path: string) => {
     if (path === "/admin") {

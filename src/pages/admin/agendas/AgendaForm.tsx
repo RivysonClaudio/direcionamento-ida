@@ -3,7 +3,6 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import type { IAgenda } from "./IAgenda";
 import type { IAssistido } from "../assistidos/IAssistido";
-import type { IProfissional } from "../profissionais/IProfissional";
 import DatabaseService from "../../../services/database/DatabaseService";
 import { mostrarNotificacao } from "../../../util/notificacao";
 import BottomDialog from "../../../components/BottomDialog";
@@ -33,11 +32,13 @@ function AgendaForm() {
   const [assistidoSearchTerm, setAssistidoSearchTerm] = useState("");
   const assistidoSearchInputRef = useRef<HTMLInputElement>(null);
 
-  const [profissionais, setProfissionais] = useState<IProfissional[]>([]);
+  const [profissionais, setProfissionais] = useState<Record<string, string>[]>(
+    []
+  );
   const [profissionalSearchTerm, setProfissionalSearchTerm] = useState("");
   const profissionalSearchInputRef = useRef<HTMLInputElement>(null);
 
-  const [apoios, setApoios] = useState<IProfissional[]>([]);
+  const [apoios, setApoios] = useState<Record<string, string>[]>([]);
   const [apoioSearchTerm, setApoioSearchTerm] = useState("");
   const apoioSearchInputRef = useRef<HTMLInputElement>(null);
 
@@ -71,18 +72,35 @@ function AgendaForm() {
   }, [assistidoSearchTerm]);
 
   useEffect(() => {
-    database
-      .get_profissionais(profissionalSearchTerm)
-      .then((data) => setProfissionais(data))
-      .catch((err) => console.error(err));
-  }, [profissionalSearchTerm]);
+    if (isProfissionalDialogOpen && agenda?.dia_semana && agenda?.horario) {
+      database
+        .get_profissionais_disponiveis_para_agendamento(
+          agenda.dia_semana,
+          agenda.horario,
+          profissionalSearchTerm
+        )
+        .then((data) => setProfissionais(data))
+        .catch((err) => console.error(err));
+    }
+  }, [
+    isProfissionalDialogOpen,
+    profissionalSearchTerm,
+    agenda?.dia_semana,
+    agenda?.horario,
+  ]);
 
   useEffect(() => {
-    database
-      .get_profissionais(apoioSearchTerm)
-      .then((data) => setApoios(data))
-      .catch((err) => console.error(err));
-  }, [apoioSearchTerm]);
+    if (isApoioDialogOpen && agenda?.dia_semana && agenda?.horario) {
+      database
+        .get_profissionais_disponiveis_para_agendamento(
+          agenda.dia_semana,
+          agenda.horario,
+          apoioSearchTerm
+        )
+        .then((data) => setApoios(data))
+        .catch((err) => console.error(err));
+    }
+  }, [isApoioDialogOpen, apoioSearchTerm, agenda?.dia_semana, agenda?.horario]);
 
   useEffect(() => {
     if (agendaId && agendaId !== "nova") {

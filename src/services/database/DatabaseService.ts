@@ -645,6 +645,33 @@ class DatabaseService {
     })) as IProfissional[];
   }
 
+  async get_profissionais_disponiveis_para_agendamento(
+    week_day: number | null,
+    session_time: string | null,
+    searchTerm: string = ""
+  ): Promise<Record<string, string>[]> {
+    const { data, error } = await this.supabase.rpc(
+      "available_professionals_for_scheduling",
+      {
+        run_week_day: week_day,
+        run_session_time: session_time,
+        run_search_term: searchTerm,
+      }
+    );
+
+    if (error) {
+      throw new Error(
+        `Error fetching profissionais disponíveis para agendamento: ${error.message}`
+      );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return data.map((item: any) => ({
+      id: item.id,
+      nome: item.name,
+    })) as Record<string, string>[];
+  }
+
   async get_medtherapy_agenda(
     searchTerm: string = "",
     status: "all" | "sync" | "only_in_app" | "only_in_med" = "all",

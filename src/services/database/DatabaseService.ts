@@ -295,6 +295,44 @@ class DatabaseService {
     }));
   }
 
+  async get_agendas_count_by_week_day_time_room(): Promise<
+    Array<{
+      week_day: number;
+      session_time: string;
+      room: number;
+      count: number;
+    }>
+  > {
+    const query = await this.supabase
+      .from("vw_schedules")
+      .select("week_day, session_time, room")
+      .not("room", "is", null)
+      .order("week_day", { ascending: true })
+      .order("session_time", { ascending: true })
+      .order("room", { ascending: true });
+
+    if (query.error) {
+      throw new Error(`Error fetching agenda counts: ${query.error.message}`);
+    }
+
+    // Group and count manually
+    const grouped = query.data.reduce((acc, item) => {
+      const key = `${item.week_day}-${item.session_time}-${item.room}`;
+      if (!acc[key]) {
+        acc[key] = {
+          week_day: item.week_day,
+          session_time: item.session_time,
+          room: item.room,
+          count: 0,
+        };
+      }
+      acc[key].count++;
+      return acc;
+    }, {} as Record<string, { week_day: number; session_time: string; room: number; count: number }>);
+
+    return Object.values(grouped);
+  }
+
   async get_agenda_by_id(
     column_name: string,
     column_value: string

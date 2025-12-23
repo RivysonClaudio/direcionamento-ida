@@ -18,8 +18,9 @@ function SessaoForm() {
 
   const [sessao, setSessao] = useState<ISessao | null>(null);
   const [sessaoModified, setSessaoModified] = useState(false);
-  type DataOption = "ONTEM" | "HOJE" | "AMANHÃ";
-  const [dataSelecionada, setDataSelecionada] = useState<DataOption>("HOJE");
+  const [dataSelecionada, setDataSelecionada] = useState(
+    localStorage.getItem("sessao_selectedDay") || "HOJE"
+  );
   const [assistidos, setAssistidos] = useState<IAssistido[]>([]);
   const [profissionais, setProfissionais] = useState<IProfissional[]>([]);
   const [apoios, setApoios] = useState<IProfissional[]>([]);
@@ -266,7 +267,7 @@ function SessaoForm() {
             label="Dia"
             options={["ONTEM", "HOJE", "AMANHÃ"]}
             valorSelecionado={dataSelecionada}
-            onChange={(data: DataOption) => {
+            onChange={(data: string) => {
               setDataSelecionada(data);
               const dayOffset = data === "ONTEM" ? -1 : data === "HOJE" ? 0 : 1;
               setSessao({

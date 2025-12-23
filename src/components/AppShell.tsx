@@ -31,7 +31,10 @@ function AppShell() {
   // Limpar o dia selecionado quando sair de rotas /agenda
   useEffect(() => {
     if (!location.pathname.includes("/agenda")) {
-      sessionStorage.removeItem("agenda_selectedDay");
+      localStorage.removeItem("agenda_selectedDay");
+    }
+    if (!location.pathname.includes("/sessoes")) {
+      localStorage.removeItem("sessao_selectedDay");
     }
   }, [location.pathname]);
 

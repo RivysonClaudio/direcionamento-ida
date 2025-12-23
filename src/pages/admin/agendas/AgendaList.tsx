@@ -15,7 +15,7 @@ function AgendaList() {
   const database = new DatabaseService();
   const [assistido, setAssistido] = useState<IAssistido | null>(null);
   const [day, setDay] = useState<number>(() => {
-    const savedDay = sessionStorage.getItem("agenda_selectedDay");
+    const savedDay = localStorage.getItem("agenda_selectedDay");
     return savedDay ? parseInt(savedDay) : 2;
   });
   const [agendas, setAgendas] = useState<IAgenda[]>([]);
@@ -43,7 +43,7 @@ function AgendaList() {
     if (new_day < 2) new_day = 6;
     if (new_day > 6) new_day = 2;
     setDay(new_day);
-    sessionStorage.setItem("agenda_selectedDay", new_day.toString());
+    localStorage.setItem("agenda_selectedDay", new_day.toString());
   }
 
   function get_session_by_day(day: number): IAgenda[] {

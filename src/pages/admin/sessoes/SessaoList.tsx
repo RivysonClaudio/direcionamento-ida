@@ -25,7 +25,7 @@ function SessaoList() {
   const [sessoes, setSessoes] = useState<ISessao[]>([]);
   const [sessoesPendentes, setSessoesPendentes] = useState<number>(0);
   const [selected, setSelected] = useState(
-    localStorage.getItem("sessao_selected_day") || "HOJE"
+    localStorage.getItem("sessao_selectedDay") || "HOJE"
   );
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const options = ["ONTEM", "HOJE", "AMANHÃ"];
@@ -186,7 +186,7 @@ function SessaoList() {
         valorSelecionado={selected}
         onChange={(value) => {
           setSelected(value);
-          localStorage.setItem("sessao_selected_day", value);
+          localStorage.setItem("sessao_selectedDay", value);
         }}
       />
 

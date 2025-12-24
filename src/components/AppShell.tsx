@@ -47,9 +47,7 @@ function AppShell() {
 
   // Extrair ID do profissional da rota /member/:id/agenda
   const getMemberId = () => {
-    // eslint-disable-next-line no-useless-escape
-    const match = location.pathname.match(/\/member\/([^\/]+)/);
-    return match ? match[1] : "";
+    return localStorage.getItem("userId") || null;
   };
 
   return (
@@ -161,6 +159,18 @@ function AppShell() {
                 <span>Sincronização de Agenda Med</span>
               </button>
             </>
+          )}
+          {isMember && (
+            <button
+              onClick={() => {
+                navigate(`/member/sessoes`);
+                setIsMoreDialogOpen(false);
+              }}
+              className="flex items-center gap-3 p-3 rounded-lg border border-gray-300 bg-white text-neutral-700 hover:bg-gray-50 transition-colors"
+            >
+              <Calendar size={20} />
+              <span>Ver todas as sessões</span>
+            </button>
           )}
           <button
             onClick={() => {

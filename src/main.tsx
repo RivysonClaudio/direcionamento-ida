@@ -17,6 +17,7 @@ import SessaoForm from "./pages/admin/sessoes/SessaoForm.tsx";
 import AgendaList from "./pages/admin/agendas/AgendaList.tsx";
 import AgendaForm from "./pages/admin/agendas/AgendaForm.tsx";
 import MemberAgenda from "./pages/member/Agenda.tsx";
+import MemberSessoesList from "./pages/member/SessoesList.tsx";
 import AppShell from "./components/AppShell.tsx";
 import MedAgenda from "./pages/admin/medtherapy/MedAgenda.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
@@ -76,6 +77,9 @@ createRoot(document.getElementById("root")!).render(
         </Route>
         <Route path="/member/:id" element={<AppShell />}>
           <Route path="agenda" element={<MemberAgenda />} />
+        </Route>
+        <Route path="/member" element={<AppShell />}>
+          <Route path="sessoes" element={<MemberSessoesList />} />
         </Route>
       </Route>
       <Route path="/" element={<Login />} />

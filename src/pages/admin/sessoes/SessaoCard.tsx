@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 
 interface SessaoCardProps {
   sessao: ISessao;
+  readOnly?: boolean;
 }
 
-function SessaoCard({ sessao }: SessaoCardProps) {
+function SessaoCard({ sessao, readOnly = false }: SessaoCardProps) {
   const navigate = useNavigate();
   const isExtra = sessao.terapia.includes("(Extra)");
 
@@ -39,8 +40,10 @@ function SessaoCard({ sessao }: SessaoCardProps) {
 
   return (
     <li
-      onClick={() => navigate(`/admin/sessoes/${sessao.id}`)}
-      className={`rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${getStatusColor()}`}
+      onClick={() => !readOnly && navigate(`/admin/sessoes/${sessao.id}`)}
+      className={`rounded-lg p-3 shadow-sm transition-shadow ${
+        !readOnly ? "hover:shadow-md cursor-pointer" : "cursor-default"
+      } ${getStatusColor()}`}
     >
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">

@@ -170,7 +170,9 @@ function SessaoForm() {
       // Nova sessão - default to today
       setSessao({
         id: "",
-        data: Util.iso_date(0),
+        data: Util.iso_date(
+          dataSelecionada === "ONTEM" ? -1 : dataSelecionada === "HOJE" ? 0 : 1
+        ),
         status: "PENDENTE",
         terapia: "",
         horario: "",

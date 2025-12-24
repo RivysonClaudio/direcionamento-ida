@@ -7,7 +7,13 @@ interface SessaoCardProps {
 
 function SessaoCard({ sessao }: SessaoCardProps) {
   const navigate = useNavigate();
+  const isExtra = sessao.terapia.includes("(Extra)");
+
   const getStatusColor = () => {
+    if (isExtra) {
+      return "bg-purple-100 border-purple-200";
+    }
+
     switch (sessao.status) {
       case "PENDENTE":
         return "bg-red-50 border-red-200";

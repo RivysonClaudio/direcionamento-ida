@@ -1,4 +1,3 @@
-import { Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 import DatabaseService from "../../services/database/DatabaseService.ts";
 import Util from "../../util/util.tsx";
@@ -12,7 +11,6 @@ type DataOption = "ONTEM" | "HOJE" | "AMANHÃ";
 
 function Agenda() {
   const database = new DatabaseService();
-
   const { id } = useParams<{ id: string }>();
 
   const user = localStorage.getItem("user")?.split(" ")[0] || "User";
@@ -64,37 +62,27 @@ function Agenda() {
         />
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 pt-2">
-        {sessoes.length > 0 ? (
-          <div className="flex flex-col gap-3">
-            {sessoes
+      <div className="flex-1 overflow-y-auto px-4 pb-4">
+        <ul className="h-full p-2 flex flex-col gap-3 overflow-y-auto rounded-lg bg-white border border-gray-200 shadow-sm">
+          {sessoes.length > 0 ? (
+            sessoes
               .sort((a, b) => a.horario.localeCompare(b.horario))
               .map((sessao) => (
-                <div key={sessao.id} className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
-                    <Calendar size={16} className="text-neutral-600" />
-                    <h3 className="text-sm font-semibold text-neutral-700">
-                      {sessao.horario}
-                    </h3>
-                  </div>
-                  <SessaoCard
-                    sessao={sessao}
-                    onClick={() => {
-                      setSessaoSelecionada(sessao);
-                      setIsDetalhesOpen(true);
-                    }}
-                  />
-                </div>
-              ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full">
-            <Calendar size={48} className="text-neutral-400 mb-2" />
-            <p className="text-neutral-500 text-center">
-              Nenhuma sessão encontrada para esta data
-            </p>
-          </div>
-        )}
+                <SessaoCard
+                  key={sessao.id}
+                  sessao={sessao}
+                  onClick={() => {
+                    setSessaoSelecionada(sessao);
+                    setIsDetalhesOpen(true);
+                  }}
+                />
+              ))
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-neutral-400">
+              <p className="text-center">Nenhuma sessão para este dia.</p>
+            </div>
+          )}
+        </ul>
       </div>
 
       <SessaoDetalhes

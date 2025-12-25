@@ -866,6 +866,41 @@ class DatabaseService {
       throw new Error(`Error updating password: ${error.message}`);
     }
   }
+
+  async get_agenda_med_sync_count(): Promise<
+    Array<{
+      created_at: string | null;
+      agenda_med_sync: "sync" | "only_in_med" | "only_in_app";
+      total: number;
+    }>
+  > {
+    const { data, error } = await this.supabase
+      .from("vw_home_med_card")
+      .select("*");
+
+    if (error) {
+      throw new Error(`Error fetching agenda med sync data: ${error.message}`);
+    }
+
+    return data as Array<{
+      created_at: string | null;
+      agenda_med_sync: "sync" | "only_in_med" | "only_in_app";
+      total: number;
+    }>;
+  }
+
+  async ignore_medtherapy_agenda(agenda_id: number | null): Promise<void> {
+    if (agenda_id === null) return;
+
+    const { error } = await this.supabase
+      .from("agenda_med")
+      .update({ is_ignored: new Date() })
+      .eq("id", agenda_id);
+
+    if (error) {
+      throw new Error(`Error ignoring medtherapy agenda: ${error.message}`);
+    }
+  }
 }
 
 export default DatabaseService;

@@ -117,20 +117,45 @@ function MedAgendaCard({ agenda, onUpdate }: MedAgendaCardProps) {
       >
         <div className="flex flex-col gap-3 p-4">
           {agenda.agenda_med_sync === "only_in_app" && (
-            <button
-              onClick={handleDelete}
-              className="py-3 px-4 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors font-medium"
-            >
-              Apagar Agendamento
-            </button>
+            <>
+              <button
+                onClick={handleDelete}
+                className="py-3 px-4 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors font-medium"
+              >
+                Apagar Agendamento
+              </button>
+            </>
           )}
-          {agenda.agenda_med_sync === "only_in_med" && (
-            <button
-              onClick={handleCreate}
-              className="py-3 px-4 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors font-medium"
-            >
-              Criar Agendamento
-            </button>
+          {agenda.agenda_med_sync === "only_in_med" && !agenda.is_ignored && (
+            <>
+              <button
+                onClick={handleCreate}
+                className="py-3 px-4 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors font-medium"
+              >
+                Criar Agendamento
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    await database.ignore_medtherapy_agenda(
+                      agenda.agenda_med_id
+                    );
+                    setIsDialogOpen(false);
+                    if (onUpdate) {
+                      onUpdate();
+                    }
+                  } catch (error) {
+                    mostrarNotificacao(
+                      "Erro ao ignorar agenda: " + error,
+                      "error"
+                    );
+                  }
+                }}
+                className="py-3 px-4 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors font-medium"
+              >
+                Ignorar
+              </button>
+            </>
           )}
           {agenda.agenda_med_sync === "sync" && (
             <button

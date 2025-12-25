@@ -3,6 +3,7 @@ import SalaOcupacaoCard from "./SalaOcupacaoCard.tsx";
 import SessoesExtrasCard from "./SessoesExtrasCard.tsx";
 import AgendaSemanalCard from "./AgendaSemanalCard.tsx";
 import ProfissionaisDisponiveisCard from "./ProfissionaisDisponiveisCard.tsx";
+import AgendaMedSyncCard from "./AgendaMedSyncCard.tsx";
 
 function Home() {
   const user = localStorage.getItem("user")?.split(" ")[0] || "User";
@@ -19,6 +20,7 @@ function Home() {
       <div className="h-dvh overflow-auto pb-4 flex flex-col gap-4">
         <SessoesExtrasCard />
         <AgendaSemanalCard />
+        <AgendaMedSyncCard />
         <SalaOcupacaoCard />
         <ProfissionaisDisponiveisCard />
       </div>

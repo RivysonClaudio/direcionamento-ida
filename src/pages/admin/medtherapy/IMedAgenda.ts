@@ -7,4 +7,5 @@ export interface IMedAgenda {
   session_time: string;
   med_description: string | null;
   agenda_med_sync: "sync" | "only_in_app" | "only_in_med";
+  is_ignored: string | null;
 }

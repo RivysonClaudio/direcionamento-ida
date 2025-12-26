@@ -52,7 +52,7 @@ class DatabaseService {
     if (query.error) {
       throw new Error(`Error fetching profissional: ${query.error.message}`);
     } else {
-      const item = query.data[0];
+      const item = query.data;
       if (!item) return null;
 
       const result: IProfissional = {
@@ -824,8 +824,6 @@ class DatabaseService {
     if (error) {
       throw error;
     }
-
-    localStorage.setItem("authToken", data.session?.access_token || "");
 
     return data;
   }

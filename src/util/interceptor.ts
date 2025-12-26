@@ -10,27 +10,7 @@ import { setLoadingGlobal } from "../components/LoadingGlobal";
 window.originalFetch = originalFetch;
 
 window.fetch = async function (...args) {
-  // eslint-disable-next-line prefer-const
-  let [url, config] = args;
-
-  const token = localStorage.getItem("authToken");
-
-  if (config) {
-    config.headers = {
-      ...config.headers,
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...{ apikey: import.meta.env.VITE_SUPABASE_KEY },
-      "Content-Type": "application/json",
-    };
-  } else if (token) {
-    config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        apikey: import.meta.env.VITE_SUPABASE_KEY,
-        "Content-Type": "application/json",
-      },
-    };
-  }
+  const [url, config] = args;
 
   try {
     // Não mostra loading para requisições de autenticação

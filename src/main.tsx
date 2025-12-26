@@ -35,7 +35,7 @@ supabase.auth.onAuthStateChange((event) => {
     localStorage.removeItem("user");
     localStorage.removeItem("userId");
     localStorage.removeItem("userRole");
-    localStorage.removeItem("authToken");
+    // Supabase gerencia a limpeza da sessão automaticamente
     window.location.href = "/login";
   }
 });

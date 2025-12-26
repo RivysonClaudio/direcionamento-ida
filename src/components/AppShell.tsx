@@ -210,7 +210,7 @@ function AppShell() {
                 localStorage.removeItem("user");
                 localStorage.removeItem("userId");
                 localStorage.removeItem("userRole");
-                localStorage.removeItem("authToken");
+                // Supabase gerencia a limpeza da sessão automaticamente
                 navigate("/login");
               }
             }}

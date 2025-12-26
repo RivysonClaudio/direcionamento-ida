@@ -34,14 +34,16 @@ function AgendaMedSyncCard() {
   }, []);
 
   const total = syncData.reduce((acc, item) => acc + item.total, 0);
-  const sincronizadas =
-    syncData.find((item) => item.agenda_med_sync === "sync")?.total || 0;
+  const itemSync = syncData.find(
+    (item) => item.agenda_med_sync === "sync"
+  );
+  const sincronizadas = itemSync?.total || 0;
   const itemApenasNoMed = syncData.find(
     (item) => item.agenda_med_sync === "only_in_med"
   );
   const apenasNoMed = itemApenasNoMed?.total || 0;
-  const dataAtualizacaoMed = itemApenasNoMed?.created_at
-    ? new Date(itemApenasNoMed.created_at).toLocaleDateString("pt-BR", {
+  const dataAtualizacaoMed = itemSync?.created_at
+    ? new Date(itemSync.created_at).toLocaleDateString("pt-BR", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",

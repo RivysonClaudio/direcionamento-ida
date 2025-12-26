@@ -1,4 +1,4 @@
-import { ChevronLeft, Filter, AlertCircle } from "lucide-react";
+import { ChevronLeft, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import SeletorDeBotoes from "../../components/SeletorDeBotoes";
 import { useState, useRef } from "react";
@@ -7,7 +7,7 @@ import DatabaseService from "../../services/database/DatabaseService";
 import type { ISessao } from "../admin/sessoes/ISessao";
 import type { IAssistido } from "../admin/assistidos/IAssistido";
 import type { IProfissional } from "../admin/profissionais/IProfissional";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import Util from "../../util/util";
 import BottomDialog from "../../components/BottomDialog";
 import { Search } from "lucide-react";
@@ -16,7 +16,6 @@ function SessoesList() {
   const navigate = useNavigate();
   const database = DatabaseService.getInstance();
   const [sessoes, setSessoes] = useState<ISessao[]>([]);
-  const [sessoesPendentes, setSessoesPendentes] = useState<number>(0);
   const [selected, setSelected] = useState(
     localStorage.getItem("member_sessao_selectedDay") || "HOJE"
   );
@@ -82,13 +81,10 @@ function SessoesList() {
   useEffect(() => {
     const dayOffset = selected === "ONTEM" ? -1 : selected === "AMANHÃ" ? 1 : 0;
 
-    Promise.all([
-      database.get_sessoes_by_date(Util.iso_date(dayOffset), filter),
-      database.get_sessoes_pendentes_by_date(Util.iso_date(dayOffset)),
-    ])
-      .then(([sessoesData, pendentesData]) => {
+    database
+      .get_sessoes_by_date(Util.iso_date(dayOffset), filter)
+      .then((sessoesData) => {
         setSessoes(sessoesData);
-        setSessoesPendentes(pendentesData);
       })
       .catch((err) => {
         console.error(err);
@@ -178,17 +174,6 @@ function SessoesList() {
         </button>
       </div>
 
-      {sessoesPendentes > 0 && (
-        <div className="flex items-center justify-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg animate-fade-in-out">
-          <AlertCircle size={20} className="text-red-500" />
-          <h2 className="text-sm font-medium text-red-700">
-            {sessoesPendentes} Direcionamento
-            {sessoesPendentes > 1 ? "s" : ""} pendente
-            {sessoesPendentes > 1 ? "s" : ""}
-          </h2>
-        </div>
-      )}
-
       <SeletorDeBotoes
         options={options}
         valorSelecionado={selected}
@@ -200,9 +185,11 @@ function SessoesList() {
 
       <ul className="h-full p-2 flex flex-col gap-3 overflow-y-auto rounded-lg bg-white border border-gray-200 shadow-sm">
         {sessoes.length > 0 ? (
-          sessoes.map((sessao) => (
-            <SessaoCard key={sessao.id} sessao={sessao} readOnly={true} />
-          ))
+          sessoes.map((sessao) =>
+            sessao.status === "CANCELADO" ? null : (
+              <SessaoCard key={sessao.id} sessao={sessao} readOnly={true} />
+            )
+          )
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-neutral-400">
             <p className="text-center">Nenhuma sessão para este dia.</p>

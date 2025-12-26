@@ -8,6 +8,7 @@ import {
   LogOut,
   CalendarSync,
   KeyRound,
+  ClipboardList,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import BottomDialog from "./BottomDialog";
@@ -147,6 +148,16 @@ function AppShell() {
               >
                 <UserCheck size={20} />
                 <span>Profissionais</span>
+              </button>
+              <button
+                onClick={() => {
+                  navigate("/admin/ocorrencias");
+                  setIsMoreDialogOpen(false);
+                }}
+                className="flex items-center gap-3 p-3 rounded-lg border border-gray-300 bg-white text-neutral-700 hover:bg-gray-50 transition-colors"
+              >
+                <ClipboardList size={20} />
+                <span>Ocorrências</span>
               </button>
               <button
                 onClick={() => {

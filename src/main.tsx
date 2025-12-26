@@ -20,6 +20,8 @@ import MemberAgenda from "./pages/member/Agenda.tsx";
 import MemberSessoesList from "./pages/member/SessoesList.tsx";
 import AppShell from "./components/AppShell.tsx";
 import MedAgenda from "./pages/admin/medtherapy/MedAgenda.tsx";
+import OcorrenciaList from "./pages/admin/ocorrencias/OcorrenciaList.tsx";
+import OcorrenciaForm from "./pages/admin/ocorrencias/OcorrenciaForm.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import DatabaseService from "./services/database/DatabaseService.ts";
@@ -74,6 +76,8 @@ createRoot(document.getElementById("root")!).render(
             element={<AgendaForm />}
           />
           <Route path="medtherapy" element={<MedAgenda />} />
+          <Route path="ocorrencias" element={<OcorrenciaList />} />
+          <Route path="ocorrencias/:id" element={<OcorrenciaForm />} />
         </Route>
         <Route path="/member/:id" element={<AppShell />}>
           <Route path="agenda" element={<MemberAgenda />} />

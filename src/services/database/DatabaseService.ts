@@ -4,6 +4,7 @@ import type { IProfissional } from "../../pages/admin/profissionais/IProfissiona
 import type { IAgenda } from "../../pages/admin/agendas/IAgenda";
 import type { ISessao } from "../../pages/admin/sessoes/ISessao";
 import type { IMedAgenda } from "../../pages/admin/medtherapy/IMedAgenda";
+import type { IOcorrencia } from "../../pages/admin/ocorrencias/IOcorrencia";
 
 class DatabaseService {
   private static instance: DatabaseService;
@@ -899,6 +900,164 @@ class DatabaseService {
 
     if (error) {
       throw new Error(`Error ignoring medtherapy agenda: ${error.message}`);
+    }
+  }
+
+  // Ocorrências
+  async get_ocorrencias(
+    filter: {
+      type?: string;
+      professional_id?: string;
+      date_from?: string;
+      date_to?: string;
+      page?: number;
+      limit?: number;
+    } = {}
+  ): Promise<{
+    data: IOcorrencia[];
+    hasMore: boolean;
+  }> {
+    const page = filter.page || 1;
+    const limit = filter.limit || 20;
+    // Para pegar limit+1 itens, considerando que range é inclusivo em ambos os lados
+    const from = (page - 1) * limit;
+    const to = from + limit; // Pega limit+1 itens
+
+    let query = this.supabase
+      .from("vw_occurrences")
+      .select("*")
+      .is("is_deleted", null)
+      .order("to", { ascending: false })
+      .range(from, to);
+
+    if (filter.type) query = query.eq("type", filter.type);
+    if (filter.professional_id)
+      query = query.eq("professional_id", filter.professional_id);
+    if (filter.date_from) query = query.gte("from", filter.date_from);
+    if (filter.date_to) query = query.lte("to", filter.date_to);
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error(`Error fetching occurrences: ${error.message}`);
+    }
+
+    // Se retornou mais itens que o limite, significa que há mais páginas
+    const hasMore = data && data.length > limit;
+    // Remove o item extra se houver
+    const ocorrenciasData = hasMore ? data.slice(0, limit) : data;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ocorrencias = ocorrenciasData.map((item: any) => ({
+      id: item.id,
+      professional_id: item.professional_id,
+      professional_nome: item.professional_name || null,
+      type: item.type,
+      from: item.from,
+      to: item.to,
+      description: item.description,
+      batch_id: item.batch_id,
+      created_at: item.created_at,
+      created_by: item.created_by,
+      updated_at: item.updated_at,
+      updated_by: item.updated_by,
+      is_deleted: item.is_deleted,
+    })) as IOcorrencia[];
+
+    return {
+      data: ocorrencias,
+      hasMore,
+    };
+  }
+
+  async get_ocorrencia_by_id(id: string): Promise<IOcorrencia> {
+    const { data, error } = await this.supabase
+      .from("vw_occurrences")
+      .select("*")
+      .eq("id", id)
+      .is("is_deleted", null)
+      .single();
+
+    if (error) {
+      throw new Error(`Error fetching occurrence: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new Error(`Occurrence not found with id: ${id}`);
+    }
+
+    const response = data[0];
+
+    return {
+      id: response.id,
+      professional_id: response.professional_id,
+      professional_nome: response.professional_name || null,
+      type: response.type,
+      from: response.from,
+      to: response.to,
+      description: response.description,
+      batch_id: response.batch_id,
+      created_at: response.created_at,
+      created_by: response.created_by,
+      updated_at: response.updated_at,
+      updated_by: response.updated_by,
+      is_deleted: response.is_deleted,
+    } as IOcorrencia;
+  }
+
+  async create_ocorrencia(ocorrencia: IOcorrencia): Promise<void> {
+    const user = await this.supabase.auth.getUser();
+
+    const { error } = await this.supabase.from("occurrences").insert({
+      professional_id: ocorrencia.professional_id,
+      type: ocorrencia.type,
+      from: ocorrencia.from,
+      to: ocorrencia.to,
+      description: ocorrencia.description,
+      batch_id: ocorrencia.batch_id,
+      created_by: user.data.user?.id || null,
+      updated_by: user.data.user?.id || null,
+    });
+
+    if (error) {
+      throw error;
+    }
+  }
+
+  async update_ocorrencia(ocorrencia: IOcorrencia): Promise<void> {
+    const user = await this.supabase.auth.getUser();
+
+    const { error } = await this.supabase
+      .from("occurrences")
+      .update({
+        professional_id: ocorrencia.professional_id,
+        type: ocorrencia.type,
+        from: ocorrencia.from,
+        to: ocorrencia.to,
+        description: ocorrencia.description,
+        updated_at: new Date().toISOString(),
+        updated_by: user.data.user?.id || null,
+      })
+      .eq("id", ocorrencia.id);
+
+    if (error) {
+      throw error;
+    }
+  }
+
+  async delete_ocorrencia(id: string): Promise<void> {
+    const user = await this.supabase.auth.getUser();
+
+    const { error } = await this.supabase
+      .from("occurrences")
+      .update({
+        is_deleted: new Date().toISOString(),
+        updated_by: user.data.user?.id || null,
+      })
+      .eq("id", id);
+
+    if (error) {
+      throw error;
     }
   }
 }

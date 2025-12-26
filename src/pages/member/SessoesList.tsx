@@ -186,9 +186,9 @@ function SessoesList() {
       <ul className="h-full p-2 flex flex-col gap-3 overflow-y-auto rounded-lg bg-white border border-gray-200 shadow-sm">
         {sessoes.length > 0 ? (
           sessoes.map((sessao) =>
-            sessao.status === "CANCELADO" ? null : (
+            sessao.status === "AGENDADO" ? (
               <SessaoCard key={sessao.id} sessao={sessao} readOnly={true} />
-            )
+            ) : null
           )
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-neutral-400">

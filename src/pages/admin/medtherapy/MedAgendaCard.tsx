@@ -12,7 +12,7 @@ interface MedAgendaCardProps {
 
 function MedAgendaCard({ agenda, onUpdate }: MedAgendaCardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const database = new DatabaseService();
+  const database = DatabaseService.getInstance();
   const navigate = useNavigate();
   const diasDaSemana: Record<number, string> = {
     2: "Segunda",

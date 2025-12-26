@@ -11,7 +11,7 @@ function SessoesExtrasCard() {
   );
 
   useEffect(() => {
-    const database = new DatabaseService();
+    const database = DatabaseService.getInstance();
     const [year, month] = selectedPeriod.split("-").map(Number);
 
     database

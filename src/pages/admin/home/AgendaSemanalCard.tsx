@@ -11,7 +11,7 @@ function AgendaSemanalCard() {
   const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {
-    const database = new DatabaseService();
+    const database = DatabaseService.getInstance();
     database
       .get_all_agendas_count_by_week_day()
       .then((data) => setAgendasCount(data));

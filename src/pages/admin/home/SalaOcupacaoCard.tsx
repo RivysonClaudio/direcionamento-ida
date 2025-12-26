@@ -17,7 +17,7 @@ function SalaOcupacaoCard() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    const database = new DatabaseService();
+    const database = DatabaseService.getInstance();
     database
       .get_agendas_count_by_week_day_time_room()
       .then((data) => setSalaOcupacao(data))

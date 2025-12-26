@@ -15,7 +15,7 @@ function AgendaForm() {
   const isFromProfissionais =
     window.location.pathname.includes("/profissionais/");
 
-  const database = new DatabaseService();
+  const database = DatabaseService.getInstance();
 
   const [agenda, setAgenda] = useState<IAgenda | null>(null);
   const [agendaModified, setAgendaModified] = useState(false);

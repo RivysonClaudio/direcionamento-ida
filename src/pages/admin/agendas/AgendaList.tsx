@@ -12,7 +12,7 @@ import { mostrarNotificacao } from "../../../util/notificacao.ts";
 function AgendaList() {
   const { id } = useParams<{ id: string; agendaId: string }>();
   const navigate = useNavigate();
-  const database = new DatabaseService();
+  const database = DatabaseService.getInstance();
   const [assistido, setAssistido] = useState<IAssistido | null>(null);
   const [day, setDay] = useState<number>(() => {
     const savedDay = localStorage.getItem("agenda_selectedDay");

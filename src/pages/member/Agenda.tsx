@@ -10,7 +10,7 @@ import SessaoDetalhes from "./SessaoDetalhes.tsx";
 type DataOption = "ONTEM" | "HOJE" | "AMANHÃ";
 
 function Agenda() {
-  const database = new DatabaseService();
+  const database = DatabaseService.getInstance();
   const { id } = useParams<{ id: string }>();
 
   const user = localStorage.getItem("user")?.split(" ")[0] || "User";

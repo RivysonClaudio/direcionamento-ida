@@ -8,7 +8,7 @@ import BottomDialog from "../../../components/BottomDialog";
 
 function MedAgenda() {
   const navigate = useNavigate();
-  const database = new DatabaseService();
+  const database = DatabaseService.getInstance();
   const [agendas, setAgendas] = useState<IMedAgenda[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);

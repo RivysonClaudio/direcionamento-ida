@@ -21,7 +21,7 @@ import { Search } from "lucide-react";
 
 function SessaoList() {
   const navigate = useNavigate();
-  const database = new DatabaseService();
+  const database = DatabaseService.getInstance();
   const [sessoes, setSessoes] = useState<ISessao[]>([]);
   const [sessoesPendentes, setSessoesPendentes] = useState<number>(0);
   const [selected, setSelected] = useState(

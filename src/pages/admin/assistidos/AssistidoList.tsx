@@ -9,7 +9,7 @@ import { mostrarNotificacao } from "../../../util/notificacao.ts";
 
 function AssistidoList() {
   const navigate = useNavigate();
-  const database = new DatabaseService();
+  const database = DatabaseService.getInstance();
   const [assistidos, setAssistidos] = useState<IAssistido[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");

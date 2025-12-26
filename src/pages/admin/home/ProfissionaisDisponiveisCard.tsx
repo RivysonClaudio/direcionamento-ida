@@ -13,7 +13,7 @@ function ProfissionaisDisponiveisCard() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    const database = new DatabaseService();
+    const database = DatabaseService.getInstance();
     database
       .get_profissionais_disponiveis_by_date(Util.iso_date(0))
       .then((data) => setProfissionaisLivres(data));

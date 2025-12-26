@@ -35,7 +35,7 @@ function AssistidoForm() {
 
   const [assistidoModified, setAssistidoModified] = useState(false);
 
-  const database = new DatabaseService();
+  const database = DatabaseService.getInstance();
 
   useEffect(() => {
     if (id === "novo") {

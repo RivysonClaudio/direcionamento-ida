@@ -41,7 +41,7 @@ function ProfissionalForm() {
     TARDE: ["13:15", "14:00", "14:45", "15:30", "16:15", "17:00", "17:45"],
   };
 
-  const database = new DatabaseService();
+  const database = DatabaseService.getInstance();
 
   useEffect(() => {
     if (id && id !== "novo") {

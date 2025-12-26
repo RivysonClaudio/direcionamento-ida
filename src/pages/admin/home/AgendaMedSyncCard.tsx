@@ -20,7 +20,7 @@ function AgendaMedSyncCard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const database = new DatabaseService();
+    const database = DatabaseService.getInstance();
     database
       .get_agenda_med_sync_count()
       .then((data) => {

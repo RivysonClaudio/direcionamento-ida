@@ -14,7 +14,7 @@ function SessaoForm() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
 
-  const database = new DatabaseService();
+  const database = DatabaseService.getInstance();
 
   const [sessao, setSessao] = useState<ISessao | null>(null);
   const [sessaoModified, setSessaoModified] = useState(false);

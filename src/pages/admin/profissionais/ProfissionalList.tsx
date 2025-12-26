@@ -9,7 +9,7 @@ import { mostrarNotificacao } from "../../../util/notificacao.ts";
 
 function ProfissionalList() {
   const navigate = useNavigate();
-  const database = new DatabaseService();
+  const database = DatabaseService.getInstance();
   const [profissionais, setProfissionais] = useState<IProfissional[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");

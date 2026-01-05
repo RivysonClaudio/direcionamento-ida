@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ChevronDown,
   ChevronUp,
@@ -9,6 +10,7 @@ import {
 import DatabaseService from "../../../services/database/DatabaseService";
 
 function AgendaMedSyncCard() {
+  const navigate = useNavigate();
   const [syncData, setSyncData] = useState<
     Array<{
       created_at: string | null;
@@ -34,9 +36,7 @@ function AgendaMedSyncCard() {
   }, []);
 
   const total = syncData.reduce((acc, item) => acc + item.total, 0);
-  const itemSync = syncData.find(
-    (item) => item.agenda_med_sync === "sync"
-  );
+  const itemSync = syncData.find((item) => item.agenda_med_sync === "sync");
   const sincronizadas = itemSync?.total || 0;
   const itemApenasNoMed = syncData.find(
     (item) => item.agenda_med_sync === "only_in_med"
@@ -72,7 +72,10 @@ function AgendaMedSyncCard() {
         )}
       </button>
       {isOpen && (
-        <div className="px-3 pb-3 flex flex-col gap-3">
+        <div
+          onClick={() => navigate("/admin/medtherapy")}
+          className="px-3 pb-3 flex flex-col gap-3"
+        >
           {loading ? (
             <div className="text-center py-4 text-sm text-neutral-500">
               Carregando...
@@ -102,7 +105,7 @@ function AgendaMedSyncCard() {
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] text-orange-900 leading-tight">
-                      Apenas Med
+                      Entrou no Med
                     </p>
                     <p className="text-xl font-bold text-orange-700">
                       {apenasNoMed}
@@ -114,7 +117,7 @@ function AgendaMedSyncCard() {
                   <XCircle size={18} className="text-blue-600 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] text-blue-900 leading-tight">
-                      Apenas App
+                      Saiu do Med
                     </p>
                     <p className="text-xl font-bold text-blue-700">
                       {apenasNoApp}

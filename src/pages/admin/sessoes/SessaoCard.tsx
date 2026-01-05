@@ -11,7 +11,7 @@ function SessaoCard({ sessao, readOnly = false }: SessaoCardProps) {
   const isExtra = sessao.terapia.includes("(Extra)");
 
   const getStatusColor = () => {
-    if (isExtra) {
+    if (isExtra && sessao.status !== "CANCELADO") {
       return "bg-purple-100 border-purple-200";
     }
 

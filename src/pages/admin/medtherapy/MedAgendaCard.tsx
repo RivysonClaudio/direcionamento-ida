@@ -27,9 +27,9 @@ function MedAgendaCard({ agenda, onUpdate }: MedAgendaCardProps) {
       case "sync":
         return "Sincronizado";
       case "only_in_app":
-        return "APP";
+        return "Saiu do MedTherapy";
       case "only_in_med":
-        return "MED";
+        return "Entrou no MedTherapy";
       default:
         return "Desconhecido";
     }

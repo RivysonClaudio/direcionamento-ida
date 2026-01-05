@@ -196,7 +196,7 @@ function MedAgenda() {
                     : "border-gray-300 hover:bg-gray-50"
                 }`}
               >
-                Só no APP
+                Saiu do MedTherapy
               </button>
               <button
                 onClick={() => setTempFilter("only_in_med")}
@@ -206,7 +206,7 @@ function MedAgenda() {
                     : "border-gray-300 hover:bg-gray-50"
                 }`}
               >
-                Só no MED
+                Entrou no MedTherapy
               </button>
             </div>
           </div>

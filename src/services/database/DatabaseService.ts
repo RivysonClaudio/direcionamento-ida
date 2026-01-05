@@ -114,7 +114,7 @@ class DatabaseService {
     if (query.error) {
       throw new Error(`Error fetching assistido: ${query.error.message}`);
     } else {
-      const item = query.data[0];
+      const item = query.data;
       if (!item) return null;
 
       const result: IAssistido = {
@@ -220,7 +220,7 @@ class DatabaseService {
     if (query.error) {
       throw new Error(`Error fetching assistido: ${query.error.message}`);
     } else {
-      const item = query.data[0];
+      const item = query.data;
       if (!item) return null;
 
       const result: IProfissional = {
@@ -513,7 +513,7 @@ class DatabaseService {
     if (query.error) {
       throw new Error(`Error fetching sessao: ${query.error.message}`);
     } else {
-      const item = query.data[0];
+      const item = query.data;
       if (!item) return null;
 
       const result: ISessao = {

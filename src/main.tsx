@@ -18,6 +18,7 @@ import AgendaList from "./pages/admin/agendas/AgendaList.tsx";
 import AgendaForm from "./pages/admin/agendas/AgendaForm.tsx";
 import MemberAgenda from "./pages/member/Agenda.tsx";
 import MemberSessoesList from "./pages/member/SessoesList.tsx";
+import MemberSalasOcupacao from "./pages/member/SalasOcupacao.tsx";
 import AppShell from "./components/AppShell.tsx";
 import MedAgenda from "./pages/admin/medtherapy/MedAgenda.tsx";
 import OcorrenciaList from "./pages/admin/ocorrencias/OcorrenciaList.tsx";
@@ -84,6 +85,7 @@ createRoot(document.getElementById("root")!).render(
         </Route>
         <Route path="/member" element={<AppShell />}>
           <Route path="sessoes" element={<MemberSessoesList />} />
+          <Route path="salas" element={<MemberSalasOcupacao />} />
         </Route>
       </Route>
       <Route path="/" element={<Login />} />

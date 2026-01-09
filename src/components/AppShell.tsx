@@ -9,6 +9,7 @@ import {
   CalendarSync,
   KeyRound,
   ClipboardList,
+  LayoutGrid,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import BottomDialog from "./BottomDialog";
@@ -172,16 +173,28 @@ function AppShell() {
             </>
           )}
           {isMember && (
-            <button
-              onClick={() => {
-                navigate(`/member/sessoes`);
-                setIsMoreDialogOpen(false);
-              }}
-              className="flex items-center gap-3 p-3 rounded-lg border border-gray-300 bg-white text-neutral-700 hover:bg-gray-50 transition-colors"
-            >
-              <Calendar size={20} />
-              <span>Ver todas as sessões</span>
-            </button>
+            <>
+              <button
+                onClick={() => {
+                  navigate(`/member/sessoes`);
+                  setIsMoreDialogOpen(false);
+                }}
+                className="flex items-center gap-3 p-3 rounded-lg border border-gray-300 bg-white text-neutral-700 hover:bg-gray-50 transition-colors"
+              >
+                <Calendar size={20} />
+                <span>Todas as Sessões</span>
+              </button>
+              <button
+                onClick={() => {
+                  navigate(`/member/salas`);
+                  setIsMoreDialogOpen(false);
+                }}
+                className="flex items-center gap-3 p-3 rounded-lg border border-gray-300 bg-white text-neutral-700 hover:bg-gray-50 transition-colors"
+              >
+                <LayoutGrid size={20} />
+                <span>Ocupação de Salas</span>
+              </button>
+            </>
           )}
           <button
             onClick={() => {

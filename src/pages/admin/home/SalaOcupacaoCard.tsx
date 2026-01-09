@@ -2,24 +2,31 @@ import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import DatabaseService from "../../../services/database/DatabaseService";
 import SeletorDeBotoes from "../../../components/SeletorDeBotoes";
+import Util from "../../../util/util";
 
 function SalaOcupacaoCard() {
   const [salaOcupacao, setSalaOcupacao] = useState<
     Array<{
-      week_day: number;
+      date: string;
       session_time: string;
       room: number;
       names: string[];
     }>
   >([]);
   const [turno, setTurno] = useState<"MANHÃ" | "TARDE">("TARDE");
-  const [diaSelecionado, setDiaSelecionado] = useState<number>(2);
+  const [dataSelecionada, setDataSelecionada] = useState<
+    "ONTEM" | "HOJE" | "AMANHÃ"
+  >("HOJE");
   const [isOpen, setIsOpen] = useState(false);
+
+  const selectedISODate = Util.iso_date(
+    dataSelecionada === "ONTEM" ? -1 : dataSelecionada === "HOJE" ? 0 : 1
+  );
 
   useEffect(() => {
     const database = DatabaseService.getInstance();
     database
-      .get_agendas_with_names_by_week_day_time_room()
+      .get_therapy_sessions_with_names_by_date_time_room()
       .then((data) => setSalaOcupacao(data))
       .catch((err) => console.error(err));
   }, []);
@@ -28,7 +35,7 @@ function SalaOcupacaoCard() {
     const horarios = salaOcupacao.filter(
       (item) =>
         item.room === sala &&
-        item.week_day === diaSelecionado &&
+        item.date === selectedISODate &&
         ((turno === "MANHÃ" && item.session_time <= "12:45") ||
           (turno === "TARDE" && item.session_time >= "13:15"))
     );
@@ -36,14 +43,6 @@ function SalaOcupacaoCard() {
   };
 
   const salas = Array.from({ length: 20 }, (_, i) => i + 1);
-
-  const diasSemana = [
-    { value: 2, label: "Seg" },
-    { value: 3, label: "Ter" },
-    { value: 4, label: "Qua" },
-    { value: 5, label: "Qui" },
-    { value: 6, label: "Sex" },
-  ];
 
   return (
     <div className="flex flex-col gap-3 bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -63,26 +62,16 @@ function SalaOcupacaoCard() {
       {isOpen && (
         <div className="px-3 pb-3 flex flex-col gap-3">
           <SeletorDeBotoes
+            options={["ONTEM", "HOJE", "AMANHÃ"]}
+            valorSelecionado={dataSelecionada}
+            onChange={setDataSelecionada}
+          />
+
+          <SeletorDeBotoes
             options={["MANHÃ", "TARDE"]}
             valorSelecionado={turno}
             onChange={setTurno}
           />
-
-          <div className="flex gap-2 justify-center">
-            {diasSemana.map((dia) => (
-              <button
-                key={dia.value}
-                onClick={() => setDiaSelecionado(dia.value)}
-                className={`px-3 py-1.5 rounded-lg font-medium text-xs transition-all ${
-                  diaSelecionado === dia.value
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-100 text-neutral-600 hover:bg-gray-200"
-                }`}
-              >
-                {dia.label}
-              </button>
-            ))}
-          </div>
 
           <div className="flex flex-col gap-2">
             {salas.map((sala) => {

@@ -9,7 +9,7 @@ function SalaOcupacaoCard() {
       week_day: number;
       session_time: string;
       room: number;
-      count: number;
+      names: string[];
     }>
   >([]);
   const [turno, setTurno] = useState<"MANHÃ" | "TARDE">("TARDE");
@@ -19,7 +19,7 @@ function SalaOcupacaoCard() {
   useEffect(() => {
     const database = DatabaseService.getInstance();
     database
-      .get_agendas_count_by_week_day_time_room()
+      .get_agendas_with_names_by_week_day_time_room()
       .then((data) => setSalaOcupacao(data))
       .catch((err) => console.error(err));
   }, []);
@@ -114,16 +114,23 @@ function SalaOcupacaoCard() {
                     )}
                   </div>
                   {isOcupada ? (
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-col gap-2">
                       {horarios.map((h, idx) => (
                         <div
                           key={idx}
-                          className="inline-flex items-center gap-1.5 bg-blue-500 text-white text-xs px-2 py-1 rounded-md"
+                          className="flex flex-col gap-1 bg-blue-500 text-white text-xs p-2 rounded-md"
                         >
                           <span className="font-medium">{h.session_time}</span>
-                          <span className="bg-blue-700 px-1.5 rounded text-[10px] font-bold">
-                            {h.count}
-                          </span>
+                          <div className="flex flex-col gap-1">
+                            {h.names.map((name, nameIdx) => (
+                              <span
+                                key={nameIdx}
+                                className="text-[11px] text-blue-100"
+                              >
+                                • {name}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                       ))}
                     </div>

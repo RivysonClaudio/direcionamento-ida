@@ -37,6 +37,15 @@ function SessaoForm() {
   const [isProfissionalPinned, setIsProfissionalPinned] = useState(true);
   const [isApoioPinned, setIsApoioPinned] = useState(true);
 
+  const [salasOcupadas, setSalasOcupadas] = useState<
+    Array<{
+      date: string;
+      session_time: string;
+      room: number;
+      names: string[];
+    }>
+  >([]);
+
   const observacoesInputRef = useRef<HTMLTextAreaElement>(null);
   const assistidoSearchInputRef = useRef<HTMLInputElement>(null);
   const profissionalSearchInputRef = useRef<HTMLInputElement>(null);
@@ -151,6 +160,15 @@ function SessaoForm() {
     sessao?.horario,
     apoioSearchTerm,
   ]);
+
+  useEffect(() => {
+    if (isSalaDialogOpen && sessao?.data && sessao?.horario) {
+      database
+        .get_therapy_sessions_with_names_by_date_time_room()
+        .then((data) => setSalasOcupadas(data))
+        .catch((err) => console.error(err));
+    }
+  }, [isSalaDialogOpen, sessao?.data, sessao?.horario]);
 
   useEffect(() => {
     if (id && id !== "novo") {
@@ -462,23 +480,72 @@ function SessaoForm() {
       >
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-5 gap-2">
-            {salas_options.map((sala) => (
-              <button
-                key={sala}
-                onClick={() => {
-                  setSessao({ ...sessao, sala } as ISessao);
-                  setSessaoModified(true);
-                  setIsSalaDialogOpen(false);
-                }}
-                className={`p-3 rounded-lg border text-sm font-medium transition-all ${
-                  sessao?.sala === sala
-                    ? "bg-blue-500 border-blue-500 text-white"
-                    : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
-                }`}
-              >
-                {sala}
-              </button>
-            ))}
+            {salas_options.map((sala) => {
+              const salaOcupada = salasOcupadas.find(
+                (s) =>
+                  s.room === sala &&
+                  s.date === sessao?.data &&
+                  s.session_time === sessao?.horario
+              );
+              const isOcupada = salaOcupada && salaOcupada.names.length > 0;
+
+              return (
+                <button
+                  key={sala}
+                  onClick={() => {
+                    setSessao({ ...sessao, sala } as ISessao);
+                    setSessaoModified(true);
+                    setIsSalaDialogOpen(false);
+                  }}
+                  className={`p-3 rounded-lg border transition-all flex flex-col gap-1 ${
+                    sessao?.sala === sala
+                      ? "bg-blue-500 border-blue-500 text-white"
+                      : isOcupada
+                      ? "bg-blue-50 border-blue-300 text-neutral-700"
+                      : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                  }`}
+                >
+                  <span className="text-sm font-medium">{sala}</span>
+                  <span
+                    className={`text-xs font-semibold ${
+                      sessao?.sala === sala
+                        ? "text-blue-100"
+                        : isOcupada
+                        ? "text-blue-600"
+                        : "text-neutral-400"
+                    }`}
+                  >
+                    {isOcupada ? "Ocupada" : "Livre"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="max-h-[300px] overflow-y-auto flex flex-col gap-2">
+            {salasOcupadas
+              .filter(
+                (s) =>
+                  s.date === sessao?.data &&
+                  s.session_time === sessao?.horario &&
+                  s.names.length > 0
+              )
+              .map((sala) => (
+                <div
+                  key={sala.room}
+                  className="p-3 bg-blue-50 rounded-lg border border-blue-300"
+                >
+                  <p className="text-sm font-semibold text-blue-700 mb-1">
+                    Sala {sala.room} - Ocupada
+                  </p>
+                  <ul className="flex flex-col gap-1">
+                    {sala.names.map((name, idx) => (
+                      <li key={idx} className="text-xs text-blue-600">
+                        • {name}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
           </div>
           <button
             onClick={() => {

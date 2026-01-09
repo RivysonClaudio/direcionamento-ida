@@ -334,6 +334,90 @@ class DatabaseService {
     return Object.values(grouped);
   }
 
+  async get_agendas_with_names_by_week_day_time_room(): Promise<
+    Array<{
+      week_day: number;
+      session_time: string;
+      room: number;
+      names: string[];
+    }>
+  > {
+    const query = await this.supabase
+      .from("vw_schedules")
+      .select("week_day, session_time, room, patient")
+      .not("room", "is", null)
+      .order("week_day", { ascending: true })
+      .order("session_time", { ascending: true })
+      .order("room", { ascending: true });
+
+    if (query.error) {
+      throw new Error(
+        `Error fetching agenda with names: ${query.error.message}`
+      );
+    }
+
+    // Group by week_day, session_time, room and collect names
+    const grouped = query.data.reduce((acc, item) => {
+      const key = `${item.week_day}-${item.session_time}-${item.room}`;
+      if (!acc[key]) {
+        acc[key] = {
+          week_day: item.week_day,
+          session_time: item.session_time,
+          room: item.room,
+          names: [],
+        };
+      }
+      if (item.patient && !acc[key].names.includes(item.patient)) {
+        acc[key].names.push(item.patient);
+      }
+      return acc;
+    }, {} as Record<string, { week_day: number; session_time: string; room: number; names: string[] }>);
+
+    return Object.values(grouped);
+  }
+
+  async get_therapy_sessions_with_names_by_date_time_room(): Promise<
+    Array<{
+      date: string;
+      session_time: string;
+      room: number;
+      names: string[];
+    }>
+  > {
+    const query = await this.supabase
+      .from("vw_therapy_sessions")
+      .select("date, session_time, room, patient_name")
+      .not("room", "is", null)
+      .order("date", { ascending: true })
+      .order("session_time", { ascending: true })
+      .order("room", { ascending: true });
+
+    if (query.error) {
+      throw new Error(
+        `Error fetching therapy sessions with names: ${query.error.message}`
+      );
+    }
+
+    // Group by date, session_time, room and collect names
+    const grouped = query.data.reduce((acc, item) => {
+      const key = `${item.date}-${item.session_time}-${item.room}`;
+      if (!acc[key]) {
+        acc[key] = {
+          date: item.date,
+          session_time: item.session_time,
+          room: item.room,
+          names: [],
+        };
+      }
+      if (item.patient_name && !acc[key].names.includes(item.patient_name)) {
+        acc[key].names.push(item.patient_name);
+      }
+      return acc;
+    }, {} as Record<string, { date: string; session_time: string; room: number; names: string[] }>);
+
+    return Object.values(grouped);
+  }
+
   async get_agenda_by_id(
     column_name: string,
     column_value: string

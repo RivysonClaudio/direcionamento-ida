@@ -42,6 +42,15 @@ function AgendaForm() {
   const [apoioSearchTerm, setApoioSearchTerm] = useState("");
   const apoioSearchInputRef = useRef<HTMLInputElement>(null);
 
+  const [salasOcupadas, setSalasOcupadas] = useState<
+    Array<{
+      week_day: number;
+      session_time: string;
+      room: number;
+      names: string[];
+    }>
+  >([]);
+
   const horarios_options = {
     manha: ["08:15", "09:00", "09:45", "10:30", "11:15", "12:00", "12:45"],
     tarde: ["13:15", "14:00", "14:45", "15:30", "16:15", "17:00", "17:45"],
@@ -101,6 +110,15 @@ function AgendaForm() {
         .catch((err) => console.error(err));
     }
   }, [isApoioDialogOpen, apoioSearchTerm, agenda?.dia_semana, agenda?.horario]);
+
+  useEffect(() => {
+    if (isSalaDialogOpen && agenda?.dia_semana && agenda?.horario) {
+      database
+        .get_agendas_with_names_by_week_day_time_room()
+        .then((data) => setSalasOcupadas(data))
+        .catch((err) => console.error(err));
+    }
+  }, [isSalaDialogOpen, agenda?.dia_semana, agenda?.horario]);
 
   useEffect(() => {
     if (agendaId && agendaId !== "nova") {
@@ -409,23 +427,72 @@ function AgendaForm() {
       >
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-5 gap-2">
-            {salas_options.map((sala) => (
-              <button
-                key={sala}
-                onClick={() => {
-                  setAgenda({ ...agenda, sala } as IAgenda);
-                  setAgendaModified(true);
-                  setIsSalaDialogOpen(false);
-                }}
-                className={`p-3 rounded-lg border text-sm font-medium transition-all ${
-                  agenda?.sala === sala
-                    ? "bg-blue-500 border-blue-500 text-white"
-                    : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
-                }`}
-              >
-                {sala}
-              </button>
-            ))}
+            {salas_options.map((sala) => {
+              const salaOcupada = salasOcupadas.find(
+                (s) =>
+                  s.room === sala &&
+                  s.week_day === agenda?.dia_semana &&
+                  s.session_time === agenda?.horario
+              );
+              const isOcupada = salaOcupada && salaOcupada.names.length > 0;
+
+              return (
+                <button
+                  key={sala}
+                  onClick={() => {
+                    setAgenda({ ...agenda, sala } as IAgenda);
+                    setAgendaModified(true);
+                    setIsSalaDialogOpen(false);
+                  }}
+                  className={`p-3 rounded-lg border transition-all flex flex-col gap-1 ${
+                    agenda?.sala === sala
+                      ? "bg-blue-500 border-blue-500 text-white"
+                      : isOcupada
+                      ? "bg-blue-50 border-blue-300 text-neutral-700"
+                      : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                  }`}
+                >
+                  <span className="text-sm font-medium">{sala}</span>
+                  <span
+                    className={`text-xs font-semibold ${
+                      agenda?.sala === sala
+                        ? "text-blue-100"
+                        : isOcupada
+                        ? "text-blue-600"
+                        : "text-neutral-400"
+                    }`}
+                  >
+                    {isOcupada ? "Ocupada" : "Livre"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="max-h-[300px] overflow-y-auto flex flex-col gap-2">
+            {salasOcupadas
+              .filter(
+                (s) =>
+                  s.week_day === agenda?.dia_semana &&
+                  s.session_time === agenda?.horario &&
+                  s.names.length > 0
+              )
+              .map((sala) => (
+                <div
+                  key={sala.room}
+                  className="p-3 bg-blue-50 rounded-lg border border-blue-300"
+                >
+                  <p className="text-sm font-semibold text-blue-700 mb-1">
+                    Sala {sala.room} - Ocupada
+                  </p>
+                  <ul className="flex flex-col gap-1">
+                    {sala.names.map((name, idx) => (
+                      <li key={idx} className="text-xs text-blue-600">
+                        • {name}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
           </div>
           <button
             onClick={() => {

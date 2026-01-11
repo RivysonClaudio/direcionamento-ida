@@ -71,3 +71,12 @@ body {
 .animate-fade-in-out {
   animation: fade-in-out 0.2s ease-in-out;
 }
+
+.scrollbar-hidden {
+  -ms-overflow-style: none; /* IE e Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none; /* Chrome, Safari e Opera */
+}

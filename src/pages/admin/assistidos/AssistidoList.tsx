@@ -37,7 +37,7 @@ function AssistidoList() {
       mostrarNotificacao(
         "Erro ao carregar assistidos. Tente novamente: " +
           (err as Error).message,
-        "error"
+        "error",
       );
     }
   };
@@ -195,9 +195,9 @@ function AssistidoList() {
                 Todos
               </button>
               <button
-                onClick={() => setTempFilter({ ...tempFilter, shift: "MANHÃ" })}
+                onClick={() => setTempFilter({ ...tempFilter, shift: "MANHA" })}
                 className={`flex-1 py-2 px-4 rounded-lg border text-sm transition-colors ${
-                  tempFilter.shift === "MANHÃ"
+                  tempFilter.shift === "MANHA"
                     ? "bg-blue-500 border-blue-500 text-white"
                     : "border-gray-300 hover:bg-gray-50"
                 }`}
@@ -277,7 +277,7 @@ function AssistidoList() {
                 setFilter(defaultFilter);
                 localStorage.setItem(
                   "assistido_filter",
-                  JSON.stringify(defaultFilter)
+                  JSON.stringify(defaultFilter),
                 );
                 setIsFilterOpen(false);
               }}
@@ -290,7 +290,7 @@ function AssistidoList() {
                 setFilter(tempFilter);
                 localStorage.setItem(
                   "assistido_filter",
-                  JSON.stringify(tempFilter)
+                  JSON.stringify(tempFilter),
                 );
                 setIsFilterOpen(false);
               }}

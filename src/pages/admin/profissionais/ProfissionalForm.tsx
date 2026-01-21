@@ -37,7 +37,7 @@ function ProfissionalForm() {
     6: "Sex",
   };
   const turnos_horarios = {
-    MANHA: ["08:15", "09:00", "09:45", "10:30", "11:15", "12:00", "12:45"],
+    MANHA: ["07:15", "08:00", "08:45", "09:30", "10:15", "11:00", "11:45"],
     TARDE: ["13:15", "14:00", "14:45", "15:30", "16:15", "17:00", "17:45"],
   };
 
@@ -100,19 +100,19 @@ function ProfissionalForm() {
             database
               .update_sessions_on_professional_status_change(
                 profissional.id,
-                "2025-12-05"
+                "2025-12-05",
               )
               .then(() => {
                 mostrarNotificacao(
                   "Sessões atualizadas conforme mudança de status.",
-                  "success"
+                  "success",
                 );
               })
               .catch((err) => {
                 console.error(err);
                 mostrarNotificacao(
                   "Erro ao atualizar sessões após mudança de status.",
-                  "error"
+                  "error",
                 );
               });
           }
@@ -270,7 +270,7 @@ function ProfissionalForm() {
                             agendaResumo.some(
                               (agenda: IAgenda) =>
                                 agenda.horario === horario &&
-                                agenda.dia_semana === dias_da_semana[diaIndex]
+                                agenda.dia_semana === dias_da_semana[diaIndex],
                             )
                               ? "bg-(--blue) text-white font-semibold"
                               : "bg-gray-200 text-neutral-500"
@@ -280,7 +280,7 @@ function ProfissionalForm() {
                         </li>
                       ))}
                     </Fragment>
-                  )
+                  ),
                 )}
               </ul>
             </div>

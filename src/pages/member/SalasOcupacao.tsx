@@ -39,7 +39,7 @@ function SalasOcupacao() {
         (item) =>
           item.room === sala &&
           item.date === selectedISODate &&
-          ((turno === "MANHÃ" && item.session_time <= "12:45") ||
+          ((turno === "MANHÃ" && item.session_time <= "11:45") ||
             (turno === "TARDE" && item.session_time >= "13:15"))
       )
       .sort((a, b) => (a.session_time < b.session_time ? -1 : 1));

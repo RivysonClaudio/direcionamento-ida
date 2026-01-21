@@ -33,7 +33,7 @@ function AgendaForm() {
   const assistidoSearchInputRef = useRef<HTMLInputElement>(null);
 
   const [profissionais, setProfissionais] = useState<Record<string, string>[]>(
-    []
+    [],
   );
   const [profissionalSearchTerm, setProfissionalSearchTerm] = useState("");
   const profissionalSearchInputRef = useRef<HTMLInputElement>(null);
@@ -52,7 +52,7 @@ function AgendaForm() {
   >([]);
 
   const horarios_options = {
-    manha: ["08:15", "09:00", "09:45", "10:30", "11:15", "12:00", "12:45"],
+    manha: ["07:15", "08:00", "08:45", "09:30", "10:15", "11:00", "11:45"],
     tarde: ["13:15", "14:00", "14:45", "15:30", "16:15", "17:00", "17:45"],
   };
 
@@ -86,7 +86,7 @@ function AgendaForm() {
         .get_profissionais_disponiveis_para_agendamento(
           agenda.dia_semana,
           agenda.horario,
-          profissionalSearchTerm
+          profissionalSearchTerm,
         )
         .then((data) => setProfissionais(data))
         .catch((err) => console.error(err));
@@ -104,7 +104,7 @@ function AgendaForm() {
         .get_profissionais_disponiveis_para_agendamento(
           agenda.dia_semana,
           agenda.horario,
-          apoioSearchTerm
+          apoioSearchTerm,
         )
         .then((data) => setApoios(data))
         .catch((err) => console.error(err));
@@ -184,7 +184,7 @@ function AgendaForm() {
                 apoio_id: "",
                 apoio: "",
                 terapia:
-                  terapia === "ABA" ? "ABA - Análise do Comport. Aplic." : "",
+                  terapia == "ABA" ? "ABA - Análise do Comport. Aplic." : "",
                 dia_semana: dia ? parseInt(dia, 10) : 1,
                 horario: hora || "",
                 sala: null,
@@ -432,7 +432,7 @@ function AgendaForm() {
                 (s) =>
                   s.room === sala &&
                   s.week_day === agenda?.dia_semana &&
-                  s.session_time === agenda?.horario
+                  s.session_time === agenda?.horario,
               );
               const isOcupada = salaOcupada && salaOcupada.names.length > 0;
 
@@ -448,8 +448,8 @@ function AgendaForm() {
                     agenda?.sala === sala
                       ? "bg-blue-500 border-blue-500 text-white"
                       : isOcupada
-                      ? "bg-blue-50 border-blue-300 text-neutral-700"
-                      : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                        ? "bg-blue-50 border-blue-300 text-neutral-700"
+                        : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
                   }`}
                 >
                   <span className="text-sm font-medium">{sala}</span>
@@ -458,8 +458,8 @@ function AgendaForm() {
                       agenda?.sala === sala
                         ? "text-blue-100"
                         : isOcupada
-                        ? "text-blue-600"
-                        : "text-neutral-400"
+                          ? "text-blue-600"
+                          : "text-neutral-400"
                     }`}
                   >
                     {isOcupada ? "Ocupada" : "Livre"}
@@ -474,7 +474,7 @@ function AgendaForm() {
                 (s) =>
                   s.week_day === agenda?.dia_semana &&
                   s.session_time === agenda?.horario &&
-                  s.names.length > 0
+                  s.names.length > 0,
               )
               .map((sala) => (
                 <div

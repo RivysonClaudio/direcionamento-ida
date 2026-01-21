@@ -822,11 +822,11 @@ class DatabaseService {
     }
 
     if (shift === "morning") {
-      dataQuery = dataQuery.lte("session_time", "12:00");
-      countQuery = countQuery.lte("session_time", "12:00");
+      dataQuery = dataQuery.lte("session_time", "11:45");
+      countQuery = countQuery.lte("session_time", "11:45");
     } else if (shift === "afternoon") {
-      dataQuery = dataQuery.gt("session_time", "12:00");
-      countQuery = countQuery.gt("session_time", "12:00");
+      dataQuery = dataQuery.gt("session_time", "11:45");
+      countQuery = countQuery.gt("session_time", "11:45");
     }
 
     const from = (page - 1) * pageSize;

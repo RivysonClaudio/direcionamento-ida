@@ -19,7 +19,7 @@ function SessaoForm() {
   const [sessao, setSessao] = useState<ISessao | null>(null);
   const [sessaoModified, setSessaoModified] = useState(false);
   const [dataSelecionada, setDataSelecionada] = useState(
-    localStorage.getItem("sessao_selectedDay") || "HOJE"
+    localStorage.getItem("sessao_selectedDay") || "HOJE",
   );
   const [assistidos, setAssistidos] = useState<IAssistido[]>([]);
   const [profissionais, setProfissionais] = useState<IProfissional[]>([]);
@@ -58,7 +58,7 @@ function SessaoForm() {
   ];
 
   const horarios_options = {
-    manha: ["08:15", "09:00", "09:45", "10:30", "11:15", "12:00", "12:45"],
+    manha: ["07:15", "08:00", "08:45", "09:30", "10:15", "11:00", "11:45"],
     tarde: ["13:15", "14:00", "14:45", "15:30", "16:15", "17:00", "17:45"],
   };
 
@@ -88,7 +88,7 @@ function SessaoForm() {
         .get_assistidos_disponiveis(
           sessao.data,
           sessao.horario,
-          assistidoSearchTerm
+          assistidoSearchTerm,
         )
         .then((data) => setAssistidos(data))
         .catch((err) => mostrarNotificacao(err.message, "error"));
@@ -111,7 +111,7 @@ function SessaoForm() {
           sessao.data,
           sessao.horario,
           isProfissionalPinned ? sessao.assistido_id : null,
-          ""
+          "",
         )
         .then((data) => setProfissionais(data))
         .catch((err) => mostrarNotificacao(err.message, "error"));
@@ -124,7 +124,7 @@ function SessaoForm() {
           sessao.data,
           sessao.horario,
           isProfissionalPinned ? sessao.assistido_id : null,
-          profissionalSearchTerm
+          profissionalSearchTerm,
         )
         .then((data) => setProfissionais(data))
         .catch((err) => mostrarNotificacao(err.message, "error"));
@@ -147,7 +147,7 @@ function SessaoForm() {
           sessao.data,
           sessao.horario,
           isApoioPinned ? sessao.assistido_id : null,
-          apoioSearchTerm
+          apoioSearchTerm,
         )
         .then((data) => setApoios(data))
         .catch((err) => mostrarNotificacao(err.message, "error"));
@@ -189,7 +189,7 @@ function SessaoForm() {
       setSessao({
         id: "",
         data: Util.iso_date(
-          dataSelecionada === "ONTEM" ? -1 : dataSelecionada === "HOJE" ? 0 : 1
+          dataSelecionada === "ONTEM" ? -1 : dataSelecionada === "HOJE" ? 0 : 1,
         ),
         status: "PENDENTE",
         terapia: "",
@@ -219,7 +219,7 @@ function SessaoForm() {
     )
       return mostrarNotificacao(
         "Não é possível atribuir um profissional inativo à sessão.",
-        "error"
+        "error",
       );
     if (
       sessao &&
@@ -228,7 +228,7 @@ function SessaoForm() {
     )
       return mostrarNotificacao(
         "Não é possível atribuir um profissional de apoio inativo à sessão.",
-        "error"
+        "error",
       );
 
     try {
@@ -352,7 +352,7 @@ function SessaoForm() {
                   setIsAssistidoDialogOpen(true);
                 } else {
                   mostrarNotificacao(
-                    "Por favor, selecione um horário antes de escolher o assistido."
+                    "Por favor, selecione um horário antes de escolher o assistido.",
                   );
                 }
               }}
@@ -375,11 +375,11 @@ function SessaoForm() {
               onClick={() => {
                 if (!sessao?.horario) {
                   mostrarNotificacao(
-                    "Por favor, selecione um horário antes de escolher o profissional."
+                    "Por favor, selecione um horário antes de escolher o profissional.",
                   );
                 } else if (!sessao?.assistido_id) {
                   mostrarNotificacao(
-                    "Por favor, selecione um assistido antes de escolher o profissional."
+                    "Por favor, selecione um assistido antes de escolher o profissional.",
                   );
                 } else {
                   setIsProfissionalDialogOpen(true);
@@ -404,11 +404,11 @@ function SessaoForm() {
               onClick={() => {
                 if (!sessao?.horario) {
                   mostrarNotificacao(
-                    "Por favor, selecione um horário antes de escolher o profissional."
+                    "Por favor, selecione um horário antes de escolher o profissional.",
                   );
                 } else if (!sessao?.assistido_id) {
                   mostrarNotificacao(
-                    "Por favor, selecione um assistido antes de escolher o profissional."
+                    "Por favor, selecione um assistido antes de escolher o profissional.",
                   );
                 } else {
                   setIsApoioDialogOpen(true);
@@ -485,7 +485,7 @@ function SessaoForm() {
                 (s) =>
                   s.room === sala &&
                   s.date === sessao?.data &&
-                  s.session_time === sessao?.horario
+                  s.session_time === sessao?.horario,
               );
               const isOcupada = salaOcupada && salaOcupada.names.length > 0;
 
@@ -501,8 +501,8 @@ function SessaoForm() {
                     sessao?.sala === sala
                       ? "bg-blue-500 border-blue-500 text-white"
                       : isOcupada
-                      ? "bg-blue-50 border-blue-300 text-neutral-700"
-                      : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                        ? "bg-blue-50 border-blue-300 text-neutral-700"
+                        : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
                   }`}
                 >
                   <span className="text-sm font-medium">{sala}</span>
@@ -511,8 +511,8 @@ function SessaoForm() {
                       sessao?.sala === sala
                         ? "text-blue-100"
                         : isOcupada
-                        ? "text-blue-600"
-                        : "text-neutral-400"
+                          ? "text-blue-600"
+                          : "text-neutral-400"
                     }`}
                   >
                     {isOcupada ? "Ocupada" : "Livre"}
@@ -527,7 +527,7 @@ function SessaoForm() {
                 (s) =>
                   s.date === sessao?.data &&
                   s.session_time === sessao?.horario &&
-                  s.names.length > 0
+                  s.names.length > 0,
               )
               .map((sala) => (
                 <div

@@ -17,7 +17,7 @@ function Home() {
         </div>
       </div>
 
-      <div className="h-dvh overflow-auto pb-4 flex flex-col gap-4">
+      <div className="h-dvh overflow-auto pb-4 flex flex-col gap-4 scrollbar-hidden">
         <SessoesExtrasCard />
         <AgendaSemanalCard />
         <AgendaMedSyncCard />

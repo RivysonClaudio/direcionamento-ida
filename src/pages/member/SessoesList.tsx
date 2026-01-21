@@ -42,7 +42,7 @@ function SessoesList() {
   const profissionalSearchRef = useRef<HTMLInputElement>(null);
 
   const horarios_options = {
-    manha: ["08:15", "09:00", "09:45", "10:30", "11:15", "12:00", "12:45"],
+    manha: ["07:15", "08:00", "08:45", "09:30", "10:15", "11:00", "11:45"],
     tarde: ["13:15", "14:00", "14:45", "15:30", "16:15", "17:00", "17:45"],
   };
 

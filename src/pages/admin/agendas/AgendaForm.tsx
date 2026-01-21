@@ -184,7 +184,7 @@ function AgendaForm() {
                 apoio_id: "",
                 apoio: "",
                 terapia:
-                  terapia == "ABA" ? "ABA - Análise do Comport. Aplic." : "",
+                  terapia == "ABA" ? terapia_options[0] : "",
                 dia_semana: dia ? parseInt(dia, 10) : 1,
                 horario: hora || "",
                 sala: null,
@@ -206,7 +206,7 @@ function AgendaForm() {
                 apoio_id: "",
                 apoio: "",
                 terapia:
-                  terapia === "ABA" ? "ABA - Análise do Comport. Aplic." : "",
+                  terapia == "ABA" ? terapia_options[0] : "",
                 dia_semana: dia ? parseInt(dia, 10) : 1,
                 horario: hora || "",
                 sala: null,

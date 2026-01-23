@@ -8,7 +8,8 @@ function ProfissionaisDisponiveisCard() {
   const [profissionaisLivres, setProfissionaisLivres] = useState<
     Record<string, Array<{ id: string; name: string }>>
   >({});
-  const [turno, setTurno] = useState<"MANHÃ" | "TARDE">("TARDE");
+  const appTurno = localStorage.getItem("app_turno");
+  const [turno, setTurno] = useState<"MANHÃ" | "TARDE">(appTurno === "MANHA" ? "MANHÃ" : "TARDE");
   const [horarioExpandido, setHorarioExpandido] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -36,11 +37,6 @@ function ProfissionaisDisponiveisCard() {
       </button>
       {isOpen && (
         <div className="px-3 pb-3 flex flex-col gap-3">
-          <SeletorDeBotoes
-            options={["MANHÃ", "TARDE"]}
-            valorSelecionado={turno}
-            onChange={setTurno}
-          />
           <div className="overflow-x-auto">
             <div className="flex flex-col gap-3">
               {(turno === "MANHÃ"

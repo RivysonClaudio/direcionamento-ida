@@ -128,7 +128,7 @@ function ProfissionalList() {
         </button>
       </div>
 
-      <ul className="h-full p-2 flex flex-col gap-3 overflow-y-auto rounded-lg bg-white border border-gray-200 shadow-sm">
+      <ul className="h-full p-2 flex flex-col gap-3 overflow-y-auto rounded-lg bg-white border border-gray-200 shadow-sm scrollbar-hidden">
         {profissionais && profissionais.length > 0 ? (
           profissionais.map((profissional, index) => (
             <ProfissionalCard
@@ -221,9 +221,9 @@ function ProfissionalList() {
                 Todos
               </button>
               <button
-                onClick={() => setTempFilter({ ...tempFilter, shift: "MANHÃ" })}
+                onClick={() => setTempFilter({ ...tempFilter, shift: "MANHA" })}
                 className={`flex-1 py-2 px-4 rounded-lg border text-sm transition-colors ${
-                  tempFilter.shift === "MANHÃ"
+                  tempFilter.shift === "MANHA"
                     ? "bg-blue-500 border-blue-500 text-white"
                     : "border-gray-300 hover:bg-gray-50"
                 }`}

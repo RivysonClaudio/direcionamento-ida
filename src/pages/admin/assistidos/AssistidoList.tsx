@@ -115,7 +115,7 @@ function AssistidoList() {
         </button>
       </div>
 
-      <ul className="h-full p-2 flex flex-col gap-3 overflow-y-auto rounded-lg bg-white border border-gray-200 shadow-sm">
+      <ul className="h-full p-2 flex flex-col gap-3 overflow-y-auto rounded-lg bg-white border border-gray-200 shadow-sm scrollbar-hidden">
         {assistidos && assistidos.length > 0 ? (
           assistidos.map((assistido, index) => (
             <AssistidoCard

@@ -25,9 +25,7 @@ function MedAgenda() {
     const saved = localStorage.getItem("medagenda_filter_shift");
     return (saved as "all" | "morning" | "afternoon") || "all";
   });
-  const [tempShift, setTempShift] = useState<"all" | "morning" | "afternoon">(
-    "all"
-  );
+
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -48,7 +46,7 @@ function MedAgenda() {
     }, 350);
 
     return () => clearTimeout(timer);
-  }, [searchTerm, filter, shift]);
+  }, [searchTerm, filter]);
 
   const loadAgendas = (pageNum: number = page, append: boolean = false) => {
     if (loading) return;
@@ -56,7 +54,7 @@ function MedAgenda() {
     setLoading(true);
 
     database
-      .get_medtherapy_agenda(searchTerm, filter, shift, pageNum)
+      .get_medtherapy_agenda(searchTerm, filter, pageNum)
       .then((result) => {
         if (append) {
           setAgendas((prev) => [...prev, ...result.data]);
@@ -112,7 +110,6 @@ function MedAgenda() {
         <button
           onClick={() => {
             setTempFilter(filter);
-            setTempShift(shift);
             setIsFilterOpen(true);
           }}
           className={`p-2.5 rounded-lg border transition-colors ${
@@ -126,7 +123,7 @@ function MedAgenda() {
         </button>
       </div>
 
-      <ul className="h-full p-2 flex flex-col gap-3 overflow-y-auto rounded-lg bg-white border border-gray-200 shadow-sm">
+      <ul className="h-full p-2 flex flex-col gap-3 overflow-y-auto rounded-lg bg-white border border-gray-200 shadow-sm scrollbar-hidden">
         {agendas && agendas.length > 0 ? (
           <>
             {agendas.map((agenda, index) => (
@@ -211,50 +208,11 @@ function MedAgenda() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-neutral-700">
-              Turno
-            </label>
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={() => setTempShift("all")}
-                className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
-                  tempShift === "all"
-                    ? "bg-blue-500 border-blue-500 text-white"
-                    : "border-gray-300 hover:bg-gray-50"
-                }`}
-              >
-                Todos
-              </button>
-              <button
-                onClick={() => setTempShift("morning")}
-                className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
-                  tempShift === "morning"
-                    ? "bg-blue-500 border-blue-500 text-white"
-                    : "border-gray-300 hover:bg-gray-50"
-                }`}
-              >
-                Manhã
-              </button>
-              <button
-                onClick={() => setTempShift("afternoon")}
-                className={`py-2 px-4 rounded-lg border text-sm transition-colors ${
-                  tempShift === "afternoon"
-                    ? "bg-blue-500 border-blue-500 text-white"
-                    : "border-gray-300 hover:bg-gray-50"
-                }`}
-              >
-                Tarde
-              </button>
-            </div>
-          </div>
-
           <div className="flex gap-2">
             <button
               onClick={() => {
                 setTempFilter("all");
                 setFilter("all");
-                setTempShift("all");
                 setShift("all");
                 setIsFilterOpen(false);
               }}
@@ -265,7 +223,6 @@ function MedAgenda() {
             <button
               onClick={() => {
                 setFilter(tempFilter);
-                setShift(tempShift);
                 setIsFilterOpen(false);
               }}
               className="flex-1 py-2 px-4 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"

@@ -42,6 +42,8 @@ function AgendaForm() {
   const [apoioSearchTerm, setApoioSearchTerm] = useState("");
   const apoioSearchInputRef = useRef<HTMLInputElement>(null);
 
+  const appTurno = localStorage.getItem("app_turno");
+
   const [salasOcupadas, setSalasOcupadas] = useState<
     Array<{
       week_day: number;
@@ -540,6 +542,7 @@ function AgendaForm() {
       >
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-4 max-h-[400px] overflow-y-auto">
+            {appTurno === "MANHA" && (
             <div>
               <h4 className="text-xs font-semibold text-neutral-600 mb-2">
                 Manhã
@@ -564,7 +567,8 @@ function AgendaForm() {
                 ))}
               </div>
             </div>
-
+            )}
+            {appTurno === "TARDE" && (
             <div>
               <h4 className="text-xs font-semibold text-neutral-600 mb-2">
                 Tarde
@@ -589,6 +593,7 @@ function AgendaForm() {
                 ))}
               </div>
             </div>
+            )}
           </div>
           <button
             onClick={() => {

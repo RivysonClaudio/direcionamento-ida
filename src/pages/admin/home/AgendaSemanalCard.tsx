@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import DatabaseService from "../../../services/database/DatabaseService";
-import SeletorDeBotoes from "../../../components/SeletorDeBotoes";
 
 function AgendaSemanalCard() {
   const [agendasCount, setAgendasCount] = useState<
     Array<{ week_day: number; session_time: string; count: number }>
   >([]);
-  const [turno, setTurno] = useState<"MANHÃ" | "TARDE">("TARDE");
+  const appTurno = localStorage.getItem("app_turno");
+  const [turno, setTurno] = useState<"MANHÃ" | "TARDE">(appTurno === "MANHA" ? "MANHÃ" : "TARDE");
   const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {
@@ -34,11 +34,6 @@ function AgendaSemanalCard() {
       </button>
       {isOpen && (
         <div className="px-3 pb-3 flex flex-col gap-3">
-          <SeletorDeBotoes
-            options={["MANHÃ", "TARDE"]}
-            valorSelecionado={turno}
-            onChange={setTurno}
-          />
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>

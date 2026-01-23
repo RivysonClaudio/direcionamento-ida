@@ -202,7 +202,7 @@ function OcorrenciaList() {
         </button>
       </div>
 
-      <div className="flex-1 flex flex-col gap-3 overflow-y-auto bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+      <div className="flex-1 flex flex-col gap-3 overflow-y-auto bg-white rounded-lg border border-gray-200 shadow-sm p-4 scrollbar-hidden">
         {filteredOcorrencias.length > 0 ? (
           <>
             {filteredOcorrencias.map((ocorrencia) => (

@@ -50,9 +50,9 @@ function Login() {
         if (userInfo) {
           localStorage.setItem("user", userInfo.nome);
           localStorage.setItem("userId", userInfo.id);
-          if (userInfo.role) {
-            localStorage.setItem("userRole", userInfo.role);
-          }
+          localStorage.setItem("userRole", userInfo.role);
+          localStorage.setItem("user_info", JSON.stringify(userInfo));
+          localStorage.setItem("app_turno", userInfo.turno);
 
           if (userInfo?.role == "ADMIN") {
             navigate("/admin");

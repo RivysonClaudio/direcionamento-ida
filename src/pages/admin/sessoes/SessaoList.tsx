@@ -190,7 +190,7 @@ function SessaoList() {
         }}
       />
 
-      <ul className="h-full p-2 flex flex-col gap-3 overflow-y-auto rounded-lg bg-white border border-gray-200 shadow-sm">
+      <ul className="h-full p-2 flex flex-col gap-3 overflow-y-auto rounded-lg bg-white border border-gray-200 shadow-sm scrollbar-hidden">
         {sessoes.length > 0 ? (
           sessoes.map((sessao) => (
             <SessaoCard key={sessao.id} sessao={sessao} />

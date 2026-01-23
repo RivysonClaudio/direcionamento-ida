@@ -342,7 +342,9 @@ class DatabaseService {
       names: string[];
     }>
   > {
-    const query = await this.supabase
+    const appTurno = localStorage.getItem("app_turno");
+
+    let query = this.supabase
       .from("vw_schedules")
       .select("week_day, session_time, room, patient")
       .not("room", "is", null)
@@ -350,14 +352,22 @@ class DatabaseService {
       .order("session_time", { ascending: true })
       .order("room", { ascending: true });
 
-    if (query.error) {
+    if (appTurno === "MANHA") {
+      query = query.lte("session_time", "12:00");
+    } else if (appTurno === "TARDE") {
+      query = query.gt("session_time", "12:00");
+    }
+
+    const result = await query.order("patient", { ascending: true })
+
+    if (result.error) {
       throw new Error(
-        `Error fetching agenda with names: ${query.error.message}`
+        `Error fetching agenda with names: ${result.error.message}`
       );
     }
 
     // Group by week_day, session_time, room and collect names
-    const grouped = query.data.reduce((acc, item) => {
+    const grouped = result.data.reduce((acc, item) => {
       const key = `${item.week_day}-${item.session_time}-${item.room}`;
       if (!acc[key]) {
         acc[key] = {
@@ -384,7 +394,9 @@ class DatabaseService {
       names: string[];
     }>
   > {
-    const query = await this.supabase
+    const appTurno = localStorage.getItem("app_turno");
+
+    let query = this.supabase
       .from("vw_therapy_sessions")
       .select("date, session_time, room, patient_name")
       .not("room", "is", null)
@@ -392,14 +404,22 @@ class DatabaseService {
       .order("session_time", { ascending: true })
       .order("room", { ascending: true });
 
-    if (query.error) {
+    if (appTurno === "MANHA") {
+      query = query.lte("session_time", "12:00");
+    } else if (appTurno === "TARDE") {
+      query = query.gt("session_time", "12:00");
+    }
+
+    const result = await query.order("patient_name", { ascending: true })
+
+    if (result.error) {
       throw new Error(
-        `Error fetching therapy sessions with names: ${query.error.message}`
+        `Error fetching therapy sessions with names: ${result.error.message}`
       );
     }
 
     // Group by date, session_time, room and collect names
-    const grouped = query.data.reduce((acc, item) => {
+    const grouped = result.data.reduce((acc, item) => {
       const key = `${item.date}-${item.session_time}-${item.room}`;
       if (!acc[key]) {
         acc[key] = {
@@ -528,6 +548,8 @@ class DatabaseService {
       sala: "",
     }
   ): Promise<ISessao[]> {
+    const appTurno = localStorage.getItem("app_turno");
+
     let query = this.supabase
       .from("vw_therapy_sessions")
       .select("*")
@@ -544,6 +566,12 @@ class DatabaseService {
     if (filter.session_time)
       query = query.eq("session_time", filter.session_time);
     if (filter.sala) query = query.eq("room", filter.sala);
+
+    if (appTurno === "MANHA") {
+      query = query.lte("session_time", "12:00");
+    } else if (appTurno === "tarde") {
+      query = query.gt("session_time", "12:00");
+    }
 
     const result = await query.order("session_time", { ascending: true });
 
@@ -574,16 +602,26 @@ class DatabaseService {
   }
 
   async get_sessoes_pendentes_by_date(date: string): Promise<number> {
-    const query = await this.supabase
+    const appTurno = localStorage.getItem("app_turno");
+
+    let query = this.supabase
       .from("vw_therapy_sessions")
       .select("id")
       .eq("date", date)
       .eq("status", "PENDENTE");
 
-    if (query.error) {
-      throw new Error(`Error fetching sessao: ${query.error.message}`);
+    if (appTurno === "MANHA") {
+      query = query.lte("session_time", "12:00");
+    } else if (appTurno === "TARDE") {
+      query = query.gt("session_time", "12:00");
+    }
+
+    const result = await query.order("session_time", { ascending: true })
+
+    if (result.error) {
+      throw new Error(`Error fetching sessao: ${result.error.message}`);
     } else {
-      return query.data.length;
+      return result.data?.length || 0;
     }
   }
 
@@ -674,11 +712,14 @@ class DatabaseService {
     data_sessoes: string,
     dia_semana: number
   ): Promise<number> {
+    const appTurno = localStorage.getItem("app_turno");
+
     const { data, error } = await this.supabase.rpc(
-      "generate_therapy_sessions",
+      "generate_therapy_sessions_v2",
       {
         run_date: data_sessoes,
         run_week_day: dia_semana,
+        run_shift: appTurno,
       }
     );
 
@@ -710,12 +751,15 @@ class DatabaseService {
     session_time: string,
     searchTerm: string = ""
   ): Promise<IAssistido[]> {
+    const appTurno = localStorage.getItem("app_turno");
+
     const { data, error } = await this.supabase.rpc(
-      "get_therapy_available_patients",
+      "get_therapy_available_patients_v2",
       {
         p_date: date,
         p_session_time: session_time,
         p_search_name: searchTerm,
+        p_shift: appTurno,
       }
     );
 
@@ -742,13 +786,16 @@ class DatabaseService {
     patient_id: string | null,
     searchTerm: string = ""
   ): Promise<IProfissional[]> {
+    const appTurno = localStorage.getItem("app_turno");
+
     const { data, error } = await this.supabase.rpc(
-      "get_therapy_available_professionals",
+      "get_therapy_available_professionals_v2",
       {
         p_date: date,
         p_session_time: session_time,
         p_patient_id: patient_id,
         p_search_name: searchTerm,
+        p_shift: appTurno,
       }
     );
 
@@ -773,12 +820,15 @@ class DatabaseService {
     session_time: string | null,
     searchTerm: string = ""
   ): Promise<Record<string, string>[]> {
+    const appTurno = localStorage.getItem("app_turno");
+
     const { data, error } = await this.supabase.rpc(
-      "available_professionals_for_scheduling",
+      "available_professionals_for_scheduling_v2",
       {
         run_week_day: week_day,
         run_session_time: session_time,
         run_search_term: searchTerm,
+        run_shift: appTurno,
       }
     );
 
@@ -798,10 +848,11 @@ class DatabaseService {
   async get_medtherapy_agenda(
     searchTerm: string = "",
     status: "all" | "sync" | "only_in_app" | "only_in_med" = "all",
-    shift: "all" | "morning" | "afternoon" = "all",
     page: number = 1,
     pageSize: number = 15
   ): Promise<{ data: IMedAgenda[]; total: number; hasMore: boolean }> {
+    const appTurno = localStorage.getItem("app_turno");
+
     // Build query for data
     let dataQuery = this.supabase.from("vw_med_agenda_sync_aba").select("*");
 
@@ -821,12 +872,12 @@ class DatabaseService {
       countQuery = countQuery.eq("agenda_med_sync", status);
     }
 
-    if (shift === "morning") {
-      dataQuery = dataQuery.lte("session_time", "11:45");
-      countQuery = countQuery.lte("session_time", "11:45");
-    } else if (shift === "afternoon") {
-      dataQuery = dataQuery.gt("session_time", "11:45");
-      countQuery = countQuery.gt("session_time", "11:45");
+    if (appTurno === "MANHA") {
+      dataQuery = dataQuery.lte("session_time", "12:00");
+      countQuery = countQuery.lte("session_time", "12:00");
+    } else if (appTurno === "TARDE") {
+      dataQuery = dataQuery.gt("session_time", "12:00");
+      countQuery = countQuery.gt("session_time", "12:00");
     }
 
     const from = (page - 1) * pageSize;
@@ -878,19 +929,28 @@ class DatabaseService {
     year: number,
     month: number
   ): Promise<number> {
+    const appTurno = localStorage.getItem("app_turno");
     // Calculate start and end dates for the month
     const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
     const nextMonth = month === 12 ? 1 : month + 1;
     const nextYear = month === 12 ? year + 1 : year;
     const endDate = `${nextYear}-${String(nextMonth).padStart(2, "0")}-01`;
 
-    const { data, error } = await this.supabase
+    let query = this.supabase
       .from("therapy_sessions")
       .select("id", { count: "exact" })
       .eq("status", "AGENDADO")
       .gte("date", startDate)
-      .lt("date", endDate)
+      .lt("date", endDate) 
       .like("therapy", "%(Extra)");
+
+    if(appTurno === "TARDE") {
+      query = query.gt("session_time", "12:00");
+    } else {
+      query = query.lte("session_time", "12:00");
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       throw new Error(`Error fetching extra sessions count: ${error.message}`);
@@ -957,12 +1017,13 @@ class DatabaseService {
       total: number;
     }>
   > {
+    const appTurno = localStorage.getItem("app_turno");
+
     const { data, error } = await this.supabase
-      .from("vw_home_med_card")
-      .select("*");
+    .rpc("get_home_med_card", { turno: appTurno });
 
     if (error) {
-      throw new Error(`Error fetching agenda med sync data: ${error.message}`);
+      throw new Error(`Error fetching agenda med sync count: ${error.message}`);
     }
 
     return data as Array<{
@@ -1005,10 +1066,13 @@ class DatabaseService {
     const from = (page - 1) * limit;
     const to = from + limit; // Pega limit+1 itens
 
+    const appTurno = localStorage.getItem("app_turno");
+
     let query = this.supabase
       .from("vw_occurrences")
       .select("*")
       .is("is_deleted", null)
+      .eq("professional_shift", appTurno)
       .order("to", { ascending: false })
       .range(from, to);
 
@@ -1068,22 +1132,20 @@ class DatabaseService {
       throw new Error(`Occurrence not found with id: ${id}`);
     }
 
-    const response = data[0];
-
     return {
-      id: response.id,
-      professional_id: response.professional_id,
-      professional_nome: response.professional_name || null,
-      type: response.type,
-      from: response.from,
-      to: response.to,
-      description: response.description,
-      batch_id: response.batch_id,
-      created_at: response.created_at,
-      created_by: response.created_by,
-      updated_at: response.updated_at,
-      updated_by: response.updated_by,
-      is_deleted: response.is_deleted,
+      id: data.id,
+      professional_id: data.professional_id,
+      professional_nome: data.professional_name || null,
+      type: data.type,
+      from: data.from,
+      to: data.to,
+      description: data.description,
+      batch_id: data.batch_id,
+      created_at: data.created_at,
+      created_by: data.created_by,
+      updated_at: data.updated_at,
+      updated_by: data.updated_by,
+      is_deleted: data.is_deleted,
     } as IOcorrencia;
   }
 

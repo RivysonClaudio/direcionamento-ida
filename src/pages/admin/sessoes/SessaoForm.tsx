@@ -15,6 +15,7 @@ function SessaoForm() {
   const { id } = useParams<{ id: string }>();
 
   const database = DatabaseService.getInstance();
+  const appTurno = localStorage.getItem("app_turno");
 
   const [sessao, setSessao] = useState<ISessao | null>(null);
   const [sessaoModified, setSessaoModified] = useState(false);
@@ -75,20 +76,12 @@ function SessaoForm() {
   useEffect(() => {
     if (!isAssistidoDialogOpen || !sessao?.data || !sessao?.horario) return;
 
-    if (!assistidoSearchTerm) {
-      database
-        .get_assistidos_disponiveis(sessao.data, sessao.horario, "")
-        .then((data) => setAssistidos(data))
-        .catch((err) => mostrarNotificacao(err.message, "error"));
-      return;
-    }
-
     const timer = setTimeout(() => {
       database
         .get_assistidos_disponiveis(
           sessao.data,
           sessao.horario,
-          assistidoSearchTerm,
+          assistidoSearchTerm
         )
         .then((data) => setAssistidos(data))
         .catch((err) => mostrarNotificacao(err.message, "error"));
@@ -521,7 +514,7 @@ function SessaoForm() {
               );
             })}
           </div>
-          <div className="max-h-[300px] overflow-y-auto flex flex-col gap-2">
+          <div className="max-h-[300px] overflow-y-auto flex flex-col gap-2 scrollbar-hidden">
             {salasOcupadas
               .filter(
                 (s) =>
@@ -605,6 +598,7 @@ function SessaoForm() {
       >
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-4 max-h-[400px] overflow-y-auto">
+            {appTurno === "MANHA" && (
             <div>
               <h4 className="text-xs font-semibold text-neutral-600 mb-2">
                 Manhã
@@ -642,7 +636,8 @@ function SessaoForm() {
                 ))}
               </div>
             </div>
-
+            )}
+            {appTurno === "TARDE" && (
             <div>
               <h4 className="text-xs font-semibold text-neutral-600 mb-2">
                 Tarde
@@ -680,6 +675,7 @@ function SessaoForm() {
                 ))}
               </div>
             </div>
+            )}
           </div>
           <button
             onClick={() => {

@@ -13,7 +13,8 @@ function SalaOcupacaoCard() {
       names: string[];
     }>
   >([]);
-  const [turno, setTurno] = useState<"MANHÃ" | "TARDE">("TARDE");
+  const appTurno = localStorage.getItem("app_turno");
+  const [turno, setTurno] = useState<"MANHÃ" | "TARDE">(appTurno === "MANHA" ? "MANHÃ" : "TARDE");
   const [dataSelecionada, setDataSelecionada] = useState<
     "ONTEM" | "HOJE" | "AMANHÃ"
   >("HOJE");
@@ -65,12 +66,6 @@ function SalaOcupacaoCard() {
             options={["ONTEM", "HOJE", "AMANHÃ"]}
             valorSelecionado={dataSelecionada}
             onChange={setDataSelecionada}
-          />
-
-          <SeletorDeBotoes
-            options={["MANHÃ", "TARDE"]}
-            valorSelecionado={turno}
-            onChange={setTurno}
           />
 
           <div className="flex flex-col gap-2">

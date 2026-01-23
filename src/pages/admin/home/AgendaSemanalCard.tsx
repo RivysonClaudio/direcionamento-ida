@@ -6,8 +6,7 @@ function AgendaSemanalCard() {
   const [agendasCount, setAgendasCount] = useState<
     Array<{ week_day: number; session_time: string; count: number }>
   >([]);
-  const appTurno = localStorage.getItem("app_turno");
-  const [turno, setTurno] = useState<"MANHÃ" | "TARDE">(appTurno === "MANHA" ? "MANHÃ" : "TARDE");
+  const turno = localStorage.getItem("app_turno") === "MANHA" ? "MANHÃ" : "TARDE";
   const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {

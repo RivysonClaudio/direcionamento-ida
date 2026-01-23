@@ -13,8 +13,7 @@ function SalaOcupacaoCard() {
       names: string[];
     }>
   >([]);
-  const appTurno = localStorage.getItem("app_turno");
-  const [turno, setTurno] = useState<"MANHÃ" | "TARDE">(appTurno === "MANHA" ? "MANHÃ" : "TARDE");
+  const turno = localStorage.getItem("app_turno") === "MANHA" ? "MANHÃ" : "TARDE";
   const [dataSelecionada, setDataSelecionada] = useState<
     "ONTEM" | "HOJE" | "AMANHÃ"
   >("HOJE");

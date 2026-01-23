@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import DatabaseService from "../../../services/database/DatabaseService";
-import SeletorDeBotoes from "../../../components/SeletorDeBotoes";
 import Util from "../../../util/util";
 
 function ProfissionaisDisponiveisCard() {
   const [profissionaisLivres, setProfissionaisLivres] = useState<
     Record<string, Array<{ id: string; name: string }>>
   >({});
-  const appTurno = localStorage.getItem("app_turno");
-  const [turno, setTurno] = useState<"MANHÃ" | "TARDE">(appTurno === "MANHA" ? "MANHÃ" : "TARDE");
+  const turno = localStorage.getItem("app_turno") === "MANHA" ? "MANHÃ" : "TARDE";
   const [horarioExpandido, setHorarioExpandido] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 

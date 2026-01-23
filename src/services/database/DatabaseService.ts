@@ -1072,7 +1072,7 @@ class DatabaseService {
       .from("vw_occurrences")
       .select("*")
       .is("is_deleted", null)
-      .eq("professional_shift", appTurno)
+      .or(`professional_shift.eq.${appTurno},professional_shift.is.null`)
       .order("to", { ascending: false })
       .range(from, to);
 

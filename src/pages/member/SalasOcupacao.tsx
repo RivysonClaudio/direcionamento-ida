@@ -10,7 +10,7 @@ function SalasOcupacao() {
   const database = DatabaseService.getInstance();
 
   const [dataSelecionada, setDataSelecionada] = useState<string>("HOJE");
-  const [turno, setTurno] = useState<"MANHÃ" | "TARDE">("TARDE");
+  const turno = localStorage.getItem("app_turno") === "MANHA" ? "MANHÃ" : "TARDE";
   const [salasOcupadas, setSalasOcupadas] = useState<
     Array<{
       date: string;
@@ -69,13 +69,6 @@ function SalasOcupacao() {
           options={["ONTEM", "HOJE", "AMANHÃ"]}
           valorSelecionado={dataSelecionada}
           onChange={(data: string) => setDataSelecionada(data)}
-        />
-
-        <SeletorDeBotoes
-          label="Turno"
-          options={["MANHÃ", "TARDE"]}
-          valorSelecionado={turno}
-          onChange={setTurno}
         />
       </div>
 

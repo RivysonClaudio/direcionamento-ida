@@ -569,7 +569,7 @@ class DatabaseService {
 
     if (appTurno === "MANHA") {
       query = query.lte("session_time", "12:00");
-    } else if (appTurno === "tarde") {
+    } else if (appTurno === "TARDE") {
       query = query.gt("session_time", "12:00");
     }
 

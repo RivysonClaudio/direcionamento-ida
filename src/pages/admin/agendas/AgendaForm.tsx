@@ -64,7 +64,7 @@ function AgendaForm() {
   ];
 
   const salas_options = [
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
   ];
 
   const dias_semana = [
@@ -390,7 +390,11 @@ function AgendaForm() {
               onClick={() => setIsSalaDialogOpen(true)}
               className="p-2.5 rounded-lg border border-gray-300 bg-white text-neutral-700 outline-none hover:border-gray-400 transition-colors text-left"
             >
-              {agenda?.sala ? `Sala ${agenda.sala}` : "Selecione a sala..."}
+              {agenda?.sala === 0
+                ? "Externa"
+                : agenda?.sala
+                  ? `Sala ${agenda.sala}`
+                  : "Selecione a sala..."}
             </button>
           </div>
         </form>
@@ -429,16 +433,62 @@ function AgendaForm() {
       >
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-5 gap-2">
-            {salas_options.map((sala) => {
-              const salaOcupada = salasOcupadas.find(
-                (s) =>
-                  s.room === sala &&
-                  s.week_day === agenda?.dia_semana &&
-                  s.session_time === agenda?.horario,
-              );
-              const isOcupada = salaOcupada && salaOcupada.names.length > 0;
+            {salas_options
+              .filter((sala) => sala !== 0)
+              .map((sala) => {
+                const salaOcupada = salasOcupadas.find(
+                  (s) =>
+                    s.room === sala &&
+                    s.week_day === agenda?.dia_semana &&
+                    s.session_time === agenda?.horario,
+                );
+                const isOcupada = salaOcupada && salaOcupada.names.length > 0;
 
-              return (
+                return (
+                  <button
+                    key={sala}
+                    onClick={() => {
+                      setAgenda({ ...agenda, sala } as IAgenda);
+                      setAgendaModified(true);
+                      setIsSalaDialogOpen(false);
+                    }}
+                    className={`p-3 rounded-lg border transition-all flex flex-col gap-1 ${
+                      agenda?.sala === sala
+                        ? "bg-blue-500 border-blue-500 text-white"
+                        : isOcupada
+                          ? "bg-blue-50 border-blue-300 text-neutral-700"
+                          : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                    }`}
+                  >
+                    <span className="text-sm font-medium">{sala}</span>
+                    <span
+                      className={`text-xs font-semibold ${
+                        agenda?.sala === sala
+                          ? "text-blue-100"
+                          : isOcupada
+                            ? "text-blue-600"
+                            : "text-neutral-400"
+                      }`}
+                    >
+                      {isOcupada ? "Ocupada" : "Livre"}
+                    </span>
+                  </button>
+                );
+              })}
+          </div>
+          {/* Sala Externa abaixo das salas normais */}
+          {(() => {
+            const sala = 0;
+            const salaOcupada = salasOcupadas.find(
+              (s) =>
+                s.room === sala &&
+                s.week_day === agenda?.dia_semana &&
+                s.session_time === agenda?.horario,
+            );
+            const isOcupada = salaOcupada && salaOcupada.names.length > 0;
+
+            return (
+              <div className="grid grid-cols-5 gap-2">
                 <button
                   key={sala}
                   onClick={() => {
@@ -446,7 +496,7 @@ function AgendaForm() {
                     setAgendaModified(true);
                     setIsSalaDialogOpen(false);
                   }}
-                  className={`p-3 rounded-lg border transition-all flex flex-col gap-1 ${
+                  className={`col-span-5 p-3 rounded-lg border transition-all flex flex-col gap-1 ${
                     agenda?.sala === sala
                       ? "bg-blue-500 border-blue-500 text-white"
                       : isOcupada
@@ -454,7 +504,7 @@ function AgendaForm() {
                         : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
                   }`}
                 >
-                  <span className="text-sm font-medium">{sala}</span>
+                  <span className="text-sm font-medium">Externa</span>
                   <span
                     className={`text-xs font-semibold ${
                       agenda?.sala === sala
@@ -467,10 +517,10 @@ function AgendaForm() {
                     {isOcupada ? "Ocupada" : "Livre"}
                   </span>
                 </button>
-              );
-            })}
-          </div>
-          <div className="max-h-[300px] overflow-y-auto flex flex-col gap-2">
+              </div>
+            );
+          })()}
+*          <div className="max-h-[300px] overflow-y-auto flex flex-col gap-2">
             {salasOcupadas
               .filter(
                 (s) =>
@@ -484,7 +534,7 @@ function AgendaForm() {
                   className="p-3 bg-blue-50 rounded-lg border border-blue-300"
                 >
                   <p className="text-sm font-semibold text-blue-700 mb-1">
-                    Sala {sala.room} - Ocupada
+                    {sala.room === 0 ? "Externa" : `Sala ${sala.room}`} - Ocupada
                   </p>
                   <ul className="flex flex-col gap-1">
                     {sala.names.map((name, idx) => (

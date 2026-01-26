@@ -42,7 +42,7 @@ function SalaOcupacaoCard() {
     return horarios;
   };
 
-  const salas = Array.from({ length: 20 }, (_, i) => i + 1);
+  const salas = Array.from({ length: 21 }, (_, i) => i);
 
   return (
     <div className="flex flex-col gap-3 bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -87,7 +87,7 @@ function SalaOcupacaoCard() {
                         isOcupada ? "text-blue-700" : "text-neutral-400"
                       }`}
                     >
-                      Sala {sala}
+                      {sala === 0 ? "Externa" : `Sala ${sala}`}
                     </span>
                     {isOcupada && (
                       <span className="text-xs text-blue-600 font-medium">

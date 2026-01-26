@@ -42,7 +42,9 @@ function SessaoCard({ sessao, onClick }: SessaoCardProps) {
         <div className="border-t border-gray-200"></div>
 
         <div className="flex items-center justify-between text-xs text-neutral-600">
-          {sessao.sala ? (
+          {sessao.sala === 0 ? (
+            <span>Externa</span>
+          ) : sessao.sala ? (
             <span>Sala {sessao.sala}</span>
           ) : (
             <span>Sem Sala</span>

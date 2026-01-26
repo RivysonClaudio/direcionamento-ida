@@ -20,7 +20,7 @@ function SalasOcupacao() {
     }>
   >([]);
 
-  const salas_options = Array.from({ length: 20 }, (_, i) => i + 1);
+  const salas_options = Array.from({ length: 21 }, (_, i) => i);
 
   const selectedISODate = Util.iso_date(
     dataSelecionada === "ONTEM" ? -1 : dataSelecionada === "HOJE" ? 0 : 1
@@ -93,7 +93,7 @@ function SalasOcupacao() {
                     isOcupada ? "text-blue-700" : "text-neutral-400"
                   }`}
                 >
-                  Sala {sala}
+                  {sala === 0 ? "Externa" : `Sala ${sala}`}
                 </span>
                 {isOcupada && (
                   <span className="text-xs text-blue-600 font-medium">

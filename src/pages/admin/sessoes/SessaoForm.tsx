@@ -70,7 +70,7 @@ function SessaoForm() {
   ];
 
   const salas_options = [
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
   ];
 
   useEffect(() => {
@@ -274,7 +274,7 @@ function SessaoForm() {
         </button>
       </div>
 
-      <div className="h-full p-3 flex flex-col gap-4 bg-white rounded-lg border border-gray-200 shadow-sm overflow-auto">
+      <div className="h-full p-3 flex flex-col gap-4 bg-white rounded-lg border border-gray-200 shadow-sm overflow-auto scrollbar-hidden">
         <form action="javascript:void(0)" className="flex flex-col gap-4">
           <SeletorDeBotoes
             label="Dia"
@@ -424,7 +424,11 @@ function SessaoForm() {
               onClick={() => setIsSalaDialogOpen(true)}
               className="p-2.5 rounded-lg border border-gray-300 bg-white text-neutral-700 outline-none hover:border-gray-400 transition-colors text-left"
             >
-              {sessao?.sala ? `Sala ${sessao.sala}` : "Selecione a sala..."}
+              {sessao?.sala === 0
+                ? "Externa"
+                : sessao?.sala
+                  ? `Sala ${sessao.sala}`
+                  : "Selecione a sala..."}
             </button>
           </div>
 
@@ -473,16 +477,62 @@ function SessaoForm() {
       >
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-5 gap-2">
-            {salas_options.map((sala) => {
-              const salaOcupada = salasOcupadas.find(
-                (s) =>
-                  s.room === sala &&
-                  s.date === sessao?.data &&
-                  s.session_time === sessao?.horario,
-              );
-              const isOcupada = salaOcupada && salaOcupada.names.length > 0;
+            {salas_options
+              .filter((sala) => sala !== 0)
+              .map((sala) => {
+                const salaOcupada = salasOcupadas.find(
+                  (s) =>
+                    s.room === sala &&
+                    s.date === sessao?.data &&
+                    s.session_time === sessao?.horario,
+                );
+                const isOcupada = salaOcupada && salaOcupada.names.length > 0;
 
-              return (
+                return (
+                  <button
+                    key={sala}
+                    onClick={() => {
+                      setSessao({ ...sessao, sala } as ISessao);
+                      setSessaoModified(true);
+                      setIsSalaDialogOpen(false);
+                    }}
+                    className={`p-3 rounded-lg border transition-all flex flex-col gap-1 ${
+                      sessao?.sala === sala
+                        ? "bg-blue-500 border-blue-500 text-white"
+                        : isOcupada
+                          ? "bg-blue-50 border-blue-300 text-neutral-700"
+                          : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
+                    }`}
+                  >
+                    <span className="text-sm font-medium">{sala}</span>
+                    <span
+                      className={`text-xs font-semibold ${
+                        sessao?.sala === sala
+                          ? "text-blue-100"
+                          : isOcupada
+                            ? "text-blue-600"
+                            : "text-neutral-400"
+                      }`}
+                    >
+                      {isOcupada ? "Ocupada" : "Livre"}
+                    </span>
+                  </button>
+                );
+              })}
+          </div>
+          {/* Sala Externa abaixo das salas normais */}
+          {(() => {
+            const sala = 0;
+            const salaOcupada = salasOcupadas.find(
+              (s) =>
+                s.room === sala &&
+                s.date === sessao?.data &&
+                s.session_time === sessao?.horario,
+            );
+            const isOcupada = salaOcupada && salaOcupada.names.length > 0;
+
+            return (
+              <div className="grid grid-cols-5 gap-2">
                 <button
                   key={sala}
                   onClick={() => {
@@ -490,7 +540,7 @@ function SessaoForm() {
                     setSessaoModified(true);
                     setIsSalaDialogOpen(false);
                   }}
-                  className={`p-3 rounded-lg border transition-all flex flex-col gap-1 ${
+                  className={`col-span-5 p-3 rounded-lg border transition-all flex flex-col gap-1 ${
                     sessao?.sala === sala
                       ? "bg-blue-500 border-blue-500 text-white"
                       : isOcupada
@@ -498,7 +548,7 @@ function SessaoForm() {
                         : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
                   }`}
                 >
-                  <span className="text-sm font-medium">{sala}</span>
+                  <span className="text-sm font-medium">Externa</span>
                   <span
                     className={`text-xs font-semibold ${
                       sessao?.sala === sala
@@ -511,9 +561,9 @@ function SessaoForm() {
                     {isOcupada ? "Ocupada" : "Livre"}
                   </span>
                 </button>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })()}
           <div className="max-h-[300px] overflow-y-auto flex flex-col gap-2 scrollbar-hidden">
             {salasOcupadas
               .filter(
@@ -528,7 +578,7 @@ function SessaoForm() {
                   className="p-3 bg-blue-50 rounded-lg border border-blue-300"
                 >
                   <p className="text-sm font-semibold text-blue-700 mb-1">
-                    Sala {sala.room} - Ocupada
+                    {sala.room === 0 ? "Externa" : `Sala ${sala.room}`} - Ocupada
                   </p>
                   <ul className="flex flex-col gap-1">
                     {sala.names.map((name, idx) => (

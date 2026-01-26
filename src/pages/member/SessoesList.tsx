@@ -515,25 +515,46 @@ function SessoesList() {
             Todas
           </button>
           <div className="grid grid-cols-5 gap-2">
-            {salas_options.map((sala) => (
-              <button
-                key={sala}
-                onClick={() => {
-                  setTempFilter({
-                    ...tempFilter,
-                    sala: tempFilter.sala === String(sala) ? "" : String(sala),
-                  });
-                  setIsSalaDialogOpen(false);
-                }}
-                className={`py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
-                  tempFilter.sala === String(sala)
-                    ? "bg-blue-500 border-blue-500 text-white"
-                    : "border-gray-300 hover:bg-gray-50"
-                }`}
-              >
-                {sala === 0 ? "Externa" : sala}
-              </button>
-            ))}
+            {salas_options
+              .filter((sala) => sala !== 0)
+              .map((sala) => (
+                <button
+                  key={sala}
+                  onClick={() => {
+                    setTempFilter({
+                      ...tempFilter,
+                      sala: tempFilter.sala === String(sala) ? "" : String(sala),
+                    });
+                    setIsSalaDialogOpen(false);
+                  }}
+                  className={`py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
+                    tempFilter.sala === String(sala)
+                      ? "bg-blue-500 border-blue-500 text-white"
+                      : "border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  {sala}
+                </button>
+              ))}
+          </div>
+          {/* Sala Externa abaixo das salas normais */}
+          <div className="grid grid-cols-5 gap-2">
+            <button
+              onClick={() => {
+                setTempFilter({
+                  ...tempFilter,
+                  sala: tempFilter.sala === "0" ? "" : "0",
+                });
+                setIsSalaDialogOpen(false);
+              }}
+              className={`col-span-5 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
+                tempFilter.sala === "0"
+                  ? "bg-blue-500 border-blue-500 text-white"
+                  : "border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Externa
+            </button>
           </div>
         </div>
       </BottomDialog>

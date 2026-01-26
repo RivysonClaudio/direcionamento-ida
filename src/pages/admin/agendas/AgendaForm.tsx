@@ -520,7 +520,7 @@ function AgendaForm() {
               </div>
             );
           })()}
-*          <div className="max-h-[300px] overflow-y-auto flex flex-col gap-2">
+          <div className="max-h-[300px] overflow-y-auto flex flex-col gap-2">
             {salasOcupadas
               .filter(
                 (s) =>

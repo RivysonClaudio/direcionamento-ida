@@ -487,7 +487,7 @@ class DatabaseService {
       week_day: agenda.dia_semana,
       session_time: agenda.horario,
       therapy: agenda.terapia,
-      room: agenda.sala || null,
+      room: agenda.sala ?? null,
       created_by: user.data.user?.id || null,
       updated_by: user.data.user?.id || null,
     });
@@ -509,7 +509,7 @@ class DatabaseService {
         week_day: agenda.dia_semana,
         session_time: agenda.horario,
         therapy: agenda.terapia,
-        room: agenda.sala || null,
+        room: agenda.sala ?? null,
         updated_by: user.data.user?.id || null,
       })
       .eq("id", agenda.id);
@@ -674,7 +674,7 @@ class DatabaseService {
       status: sessao.status,
       observation: sessao.observacoes || null,
       origin: "MANUAL",
-      room: sessao.sala || null,
+      room: sessao.sala ?? null,
       created_by: user.data.user?.id || null,
       updated_by: user.data.user?.id || null,
     });
@@ -698,7 +698,7 @@ class DatabaseService {
         helper_id: sessao.apoio_id || null,
         status: sessao.status,
         observation: sessao.observacoes || null,
-        room: sessao.sala || null,
+        room: sessao.sala ?? null,
         updated_by: user.data.user?.id || null,
       })
       .eq("id", sessao.id);

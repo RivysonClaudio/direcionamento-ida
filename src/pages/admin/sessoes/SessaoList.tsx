@@ -450,6 +450,7 @@ function SessaoList() {
             </button>
           </div>
 
+          {localStorage.getItem("app_turno") === "MANHA" && (
           <div className="flex flex-col gap-2">
             <h3 className="text-sm font-medium text-neutral-700">Manhã</h3>
             <div className="grid grid-cols-4 gap-2">
@@ -475,7 +476,8 @@ function SessaoList() {
               ))}
             </div>
           </div>
-
+          )}
+          {localStorage.getItem("app_turno") === "TARDE" && (
           <div className="flex flex-col gap-2">
             <h3 className="text-sm font-medium text-neutral-700">Tarde</h3>
             <div className="grid grid-cols-4 gap-2">
@@ -501,6 +503,7 @@ function SessaoList() {
               ))}
             </div>
           </div>
+          )}
         </div>
       </BottomDialog>
 

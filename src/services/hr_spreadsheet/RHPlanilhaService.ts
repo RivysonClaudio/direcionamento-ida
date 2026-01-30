@@ -43,8 +43,10 @@ export default class RHPlanilhaService {
 
       mostrarNotificacao("Gerando planilha...", "info");
 
+      const turno = localStorage.getItem("app_turno");
+
       // Buscar todos os profissionais
-      const profissionais = await database.get_profissionais("");
+      const profissionais = await database.get_profissionais("", { status: "", shift: turno ?? "", function: "" });
 
       // Buscar todas as ocorrências do mês
       const dateFrom = primeiraData.toISOString().split("T")[0];

@@ -87,7 +87,7 @@ function SalaOcupacaoCard() {
                         isOcupada ? "text-blue-700" : "text-neutral-400"
                       }`}
                     >
-                      {sala === 0 ? "Externa" : `Sala ${sala}`}
+                      {sala === 0 ? "Em Ambiente Externo" : `Sala ${sala}`}
                     </span>
                     {isOcupada && (
                       <span className="text-xs text-blue-600 font-medium">

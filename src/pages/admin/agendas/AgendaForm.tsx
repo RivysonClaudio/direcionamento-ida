@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import type { IAgenda } from "./IAgenda";
 import type { IAssistido } from "../assistidos/IAssistido";
+import type { IProfissional } from "../profissionais/IProfissional";
 import DatabaseService from "../../../services/database/DatabaseService";
 import { mostrarNotificacao } from "../../../util/notificacao";
 import BottomDialog from "../../../components/BottomDialog";
@@ -32,15 +33,26 @@ function AgendaForm() {
   const [assistidoSearchTerm, setAssistidoSearchTerm] = useState("");
   const assistidoSearchInputRef = useRef<HTMLInputElement>(null);
 
-  const [profissionais, setProfissionais] = useState<Record<string, string>[]>(
-    [],
-  );
+  const [profissionais, setProfissionais] = useState<
+    (Omit<IProfissional, "role" | "observacoes"> & { is_available: boolean })[]
+  >([]);
   const [profissionalSearchTerm, setProfissionalSearchTerm] = useState("");
   const profissionalSearchInputRef = useRef<HTMLInputElement>(null);
+  const [isConfirmProfissionalDialogOpen, setIsConfirmProfissionalDialogOpen] =
+    useState(false);
+  const [profissionalSelecionado, setProfissionalSelecionado] = useState<
+    (Omit<IProfissional, "role" | "observacoes"> & { is_available: boolean }) | null
+  >(null);
 
-  const [apoios, setApoios] = useState<Record<string, string>[]>([]);
+  const [apoios, setApoios] = useState<
+    (Omit<IProfissional, "role" | "observacoes"> & { is_available: boolean })[]
+  >([]);
   const [apoioSearchTerm, setApoioSearchTerm] = useState("");
   const apoioSearchInputRef = useRef<HTMLInputElement>(null);
+  const [isConfirmApoioDialogOpen, setIsConfirmApoioDialogOpen] = useState(false);
+  const [apoioSelecionado, setApoioSelecionado] = useState<
+    (Omit<IProfissional, "role" | "observacoes"> & { is_available: boolean }) | null
+  >(null);
 
   const appTurno = localStorage.getItem("app_turno");
 
@@ -83,16 +95,33 @@ function AgendaForm() {
   }, [assistidoSearchTerm]);
 
   useEffect(() => {
-    if (isProfissionalDialogOpen && agenda?.dia_semana && agenda?.horario) {
+    if (!isProfissionalDialogOpen || !agenda?.dia_semana || !agenda?.horario)
+      return;
+
+    if (!profissionalSearchTerm) {
       database
-        .get_profissionais_disponiveis_para_agendamento(
+        .get_profissionais_disponiveis_para_agendamento_v2(
+          agenda.dia_semana,
+          agenda.horario,
+          "",
+        )
+        .then((data) => setProfissionais(data))
+        .catch((err) => console.error(err));
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      database
+        .get_profissionais_disponiveis_para_agendamento_v2(
           agenda.dia_semana,
           agenda.horario,
           profissionalSearchTerm,
         )
         .then((data) => setProfissionais(data))
         .catch((err) => console.error(err));
-    }
+    }, 350);
+
+    return () => clearTimeout(timer);
   }, [
     isProfissionalDialogOpen,
     profissionalSearchTerm,
@@ -101,16 +130,32 @@ function AgendaForm() {
   ]);
 
   useEffect(() => {
-    if (isApoioDialogOpen && agenda?.dia_semana && agenda?.horario) {
+    if (!isApoioDialogOpen || !agenda?.dia_semana || !agenda?.horario) return;
+
+    if (!apoioSearchTerm) {
       database
-        .get_profissionais_disponiveis_para_agendamento(
+        .get_profissionais_disponiveis_para_agendamento_v2(
+          agenda.dia_semana,
+          agenda.horario,
+          "",
+        )
+        .then((data) => setApoios(data))
+        .catch((err) => console.error(err));
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      database
+        .get_profissionais_disponiveis_para_agendamento_v2(
           agenda.dia_semana,
           agenda.horario,
           apoioSearchTerm,
         )
         .then((data) => setApoios(data))
         .catch((err) => console.error(err));
-    }
+    }, 350);
+
+    return () => clearTimeout(timer);
   }, [isApoioDialogOpen, apoioSearchTerm, agenda?.dia_semana, agenda?.horario]);
 
   useEffect(() => {
@@ -693,21 +738,39 @@ function AgendaForm() {
                 <button
                   key={profissional.id}
                   onClick={() => {
-                    setAgenda({
-                      ...agenda,
-                      profissional_id: profissional.id,
-                      profissional: profissional.nome,
-                    } as IAgenda);
-                    setAgendaModified(true);
-                    setIsProfissionalDialogOpen(false);
+                    if (!profissional.is_available) {
+                      // Profissional em atendimento - abrir modal de confirmação
+                      setProfissionalSelecionado(profissional);
+                      setIsConfirmProfissionalDialogOpen(true);
+                    } else {
+                      // Profissional disponível - atribuir diretamente
+                      setAgenda({
+                        ...agenda,
+                        profissional_id: profissional.id,
+                        profissional: profissional.nome,
+                      } as IAgenda);
+                      setAgendaModified(true);
+                      setIsProfissionalDialogOpen(false);
+                    }
                   }}
-                  className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
+                  className={`p-3 rounded-lg border text-sm font-medium transition-all text-left flex flex-col items-start gap-0.5 ${
                     agenda?.profissional_id === profissional.id
                       ? "bg-blue-500 border-blue-500 text-white"
                       : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
                   }`}
                 >
-                  {profissional.nome}
+                  <span>{profissional.nome}</span>
+                  <span
+                    className={`text-xs font-normal ${
+                      agenda?.profissional_id === profissional.id
+                        ? "text-blue-100"
+                        : profissional.is_available
+                          ? "text-green-600"
+                          : "text-amber-600"
+                    }`}
+                  >
+                    {profissional.is_available ? "Disponível" : "Já agendado"}
+                  </span>
                 </button>
               ))
             ) : (
@@ -768,21 +831,39 @@ function AgendaForm() {
                 <button
                   key={apoio.id}
                   onClick={() => {
-                    setAgenda({
-                      ...agenda,
-                      apoio_id: apoio.id,
-                      apoio: apoio.nome,
-                    } as IAgenda);
-                    setAgendaModified(true);
-                    setIsApoioDialogOpen(false);
+                    if (!apoio.is_available) {
+                      // Apoio em atendimento - abrir modal de confirmação
+                      setApoioSelecionado(apoio);
+                      setIsConfirmApoioDialogOpen(true);
+                    } else {
+                      // Apoio disponível - atribuir diretamente
+                      setAgenda({
+                        ...agenda,
+                        apoio_id: apoio.id,
+                        apoio: apoio.nome,
+                      } as IAgenda);
+                      setAgendaModified(true);
+                      setIsApoioDialogOpen(false);
+                    }
                   }}
-                  className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
+                  className={`p-3 rounded-lg border text-sm font-medium transition-all text-left flex flex-col items-start gap-0.5 ${
                     agenda?.apoio_id === apoio.id
                       ? "bg-blue-500 border-blue-500 text-white"
                       : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
                   }`}
                 >
-                  {apoio.nome}
+                  <span>{apoio.nome}</span>
+                  <span
+                    className={`text-xs font-normal ${
+                      agenda?.apoio_id === apoio.id
+                        ? "text-blue-100"
+                        : apoio.is_available
+                          ? "text-green-600"
+                          : "text-amber-600"
+                    }`}
+                  >
+                    {apoio.is_available ? "Disponível" : "Já agendado"}
+                  </span>
                 </button>
               ))
             ) : (
@@ -875,6 +956,108 @@ function AgendaForm() {
           >
             Limpar
           </button>
+        </div>
+      </BottomDialog>
+
+      {/* Modal de confirmação para profissional em atendimento */}
+      <BottomDialog
+        isOpen={isConfirmProfissionalDialogOpen}
+        onClose={() => {
+          setIsConfirmProfissionalDialogOpen(false);
+          setProfissionalSelecionado(null);
+        }}
+        title="Confirmar Seleção"
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-neutral-700">
+              O profissional <span className="font-semibold">{profissionalSelecionado?.nome}</span> já possui
+              uma agenda neste horário.
+            </p>
+            <p className="text-sm text-neutral-600">
+              Deseja mesmo atribuir este profissional à agenda?
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setIsConfirmProfissionalDialogOpen(false);
+                setProfissionalSelecionado(null);
+              }}
+              className="flex-1 p-3 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => {
+                if (profissionalSelecionado) {
+                  setAgenda({
+                    ...agenda,
+                    profissional_id: profissionalSelecionado.id,
+                    profissional: profissionalSelecionado.nome,
+                  } as IAgenda);
+                  setAgendaModified(true);
+                  setIsConfirmProfissionalDialogOpen(false);
+                  setIsProfissionalDialogOpen(false);
+                  setProfissionalSelecionado(null);
+                }
+              }}
+              className="flex-1 p-3 rounded-lg border border-blue-500 bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition-all"
+            >
+              Confirmar
+            </button>
+          </div>
+        </div>
+      </BottomDialog>
+
+      {/* Modal de confirmação para apoio em atendimento */}
+      <BottomDialog
+        isOpen={isConfirmApoioDialogOpen}
+        onClose={() => {
+          setIsConfirmApoioDialogOpen(false);
+          setApoioSelecionado(null);
+        }}
+        title="Confirmar Seleção"
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-neutral-700">
+              O profissional de apoio <span className="font-semibold">{apoioSelecionado?.nome}</span> já possui
+              uma agenda neste horário.
+            </p>
+            <p className="text-sm text-neutral-600">
+              Deseja mesmo atribuir este profissional de apoio à agenda?
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setIsConfirmApoioDialogOpen(false);
+                setApoioSelecionado(null);
+              }}
+              className="flex-1 p-3 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => {
+                if (apoioSelecionado) {
+                  setAgenda({
+                    ...agenda,
+                    apoio_id: apoioSelecionado.id,
+                    apoio: apoioSelecionado.nome,
+                  } as IAgenda);
+                  setAgendaModified(true);
+                  setIsConfirmApoioDialogOpen(false);
+                  setIsApoioDialogOpen(false);
+                  setApoioSelecionado(null);
+                }
+              }}
+              className="flex-1 p-3 rounded-lg border border-blue-500 bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition-all"
+            >
+              Confirmar
+            </button>
+          </div>
         </div>
       </BottomDialog>
     </div>

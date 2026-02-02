@@ -845,6 +845,42 @@ class DatabaseService {
     })) as Record<string, string>[];
   }
 
+  async get_profissionais_disponiveis_para_agendamento_v2(
+    week_day: number | null,
+    session_time: string | null,
+    searchTerm: string = ""
+  ): Promise<
+    (Omit<IProfissional, "role" | "observacoes"> & { is_available: boolean })[]
+  > {
+    const appTurno = localStorage.getItem("app_turno");
+
+    const { data, error } = await this.supabase.rpc(
+      "available_professionals_for_scheduling_v3",
+      {
+        run_week_day: week_day,
+        run_session_time: session_time,
+        run_search_name: searchTerm,
+        run_shift: appTurno,
+      }
+    );
+
+    if (error) {
+      throw new Error(
+        `Error fetching profissionais disponíveis para agendamento: ${error.message}`
+      );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return data.map((item: any) => ({
+      id: item.id,
+      status: item.status,
+      nome: item.name,
+      turno: item.shift,
+      funcao: item.function,
+      is_available: item.is_available ?? false,
+    }));
+  }
+
   async get_medtherapy_agenda(
     searchTerm: string = "",
     status: "all" | "sync" | "only_in_app" | "only_in_med" = "all",

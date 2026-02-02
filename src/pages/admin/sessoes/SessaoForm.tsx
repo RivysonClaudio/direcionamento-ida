@@ -23,8 +23,12 @@ function SessaoForm() {
     localStorage.getItem("sessao_selectedDay") || "HOJE",
   );
   const [assistidos, setAssistidos] = useState<IAssistido[]>([]);
-  const [profissionais, setProfissionais] = useState<IProfissional[]>([]);
-  const [apoios, setApoios] = useState<IProfissional[]>([]);
+  const [profissionais, setProfissionais] = useState<
+    (Omit<IProfissional, "role" | "observacoes"> & { is_available: boolean })[]
+  >([]);
+  const [apoios, setApoios] = useState<
+    (Omit<IProfissional, "role" | "observacoes"> & { is_available: boolean })[]
+  >([]);
   const [isProfissionalDialogOpen, setIsProfissionalDialogOpen] =
     useState(false);
   const [isApoioDialogOpen, setIsApoioDialogOpen] = useState(false);
@@ -32,6 +36,15 @@ function SessaoForm() {
   const [isTerapiaDialogOpen, setIsTerapiaDialogOpen] = useState(false);
   const [isAssistidoDialogOpen, setIsAssistidoDialogOpen] = useState(false);
   const [isSalaDialogOpen, setIsSalaDialogOpen] = useState(false);
+  const [isConfirmProfissionalDialogOpen, setIsConfirmProfissionalDialogOpen] =
+    useState(false);
+  const [profissionalSelecionado, setProfissionalSelecionado] = useState<
+    (Omit<IProfissional, "role" | "observacoes"> & { is_available: boolean }) | null
+  >(null);
+  const [isConfirmApoioDialogOpen, setIsConfirmApoioDialogOpen] = useState(false);
+  const [apoioSelecionado, setApoioSelecionado] = useState<
+    (Omit<IProfissional, "role" | "observacoes"> & { is_available: boolean }) | null
+  >(null);
   const [assistidoSearchTerm, setAssistidoSearchTerm] = useState("");
   const [profissionalSearchTerm, setProfissionalSearchTerm] = useState("");
   const [apoioSearchTerm, setApoioSearchTerm] = useState("");
@@ -100,7 +113,7 @@ function SessaoForm() {
 
     if (!profissionalSearchTerm) {
       database
-        .get_profissionais_disponiveis(
+        .get_profissionais_disponiveis_v2(
           sessao.data,
           sessao.horario,
           isProfissionalPinned ? sessao.assistido_id : null,
@@ -113,7 +126,7 @@ function SessaoForm() {
 
     const timer = setTimeout(() => {
       database
-        .get_profissionais_disponiveis(
+        .get_profissionais_disponiveis_v2(
           sessao.data,
           sessao.horario,
           isProfissionalPinned ? sessao.assistido_id : null,
@@ -134,9 +147,24 @@ function SessaoForm() {
   ]);
 
   useEffect(() => {
-    if (isApoioDialogOpen && sessao?.data && sessao?.horario) {
+    if (!isApoioDialogOpen || !sessao?.data || !sessao?.horario) return;
+
+    if (!apoioSearchTerm) {
       database
-        .get_profissionais_disponiveis(
+        .get_profissionais_disponiveis_v2(
+          sessao.data,
+          sessao.horario,
+          isApoioPinned ? sessao.assistido_id : null,
+          "",
+        )
+        .then((data) => setApoios(data))
+        .catch((err) => mostrarNotificacao(err.message, "error"));
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      database
+        .get_profissionais_disponiveis_v2(
           sessao.data,
           sessao.horario,
           isApoioPinned ? sessao.assistido_id : null,
@@ -144,7 +172,9 @@ function SessaoForm() {
         )
         .then((data) => setApoios(data))
         .catch((err) => mostrarNotificacao(err.message, "error"));
-    }
+    }, 350);
+
+    return () => clearTimeout(timer);
   }, [
     isApoioDialogOpen,
     isApoioPinned,
@@ -791,22 +821,42 @@ function SessaoForm() {
                 <button
                   key={profissional.id}
                   onClick={() => {
-                    setSessao({
-                      ...sessao,
-                      profissional_id: profissional.id,
-                      profissional_nome: profissional.nome,
-                      profissional_situacao: profissional.status,
-                    } as ISessao);
-                    setSessaoModified(true);
-                    setIsProfissionalDialogOpen(false);
+                    if (!profissional.is_available) {
+                      // Profissional em atendimento - abrir modal de confirmação
+                      setProfissionalSelecionado(profissional);
+                      setIsConfirmProfissionalDialogOpen(true);
+                    } else {
+                      // Profissional disponível - atribuir diretamente
+                      setSessao({
+                        ...sessao,
+                        profissional_id: profissional.id,
+                        profissional_nome: profissional.nome,
+                        profissional_situacao: profissional.status,
+                      } as ISessao);
+                      setSessaoModified(true);
+                      setIsProfissionalDialogOpen(false);
+                    }
                   }}
-                  className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
+                  className={`p-3 rounded-lg border text-sm font-medium transition-all text-left flex flex-col items-start gap-0.5 ${
                     sessao?.profissional_id === profissional.id
                       ? "bg-blue-500 border-blue-500 text-white"
                       : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
                   }`}
                 >
-                  {profissional.nome}
+                  <span>{profissional.nome}</span>
+                  <span
+                    className={`text-xs font-normal ${
+                      sessao?.profissional_id === profissional.id
+                        ? "text-blue-100"
+                        : profissional.is_available
+                          ? "text-green-600"
+                          : "text-amber-600"
+                    }`}
+                  >
+                    {profissional.is_available
+                      ? "Disponível"
+                      : "Em atendimento"}
+                  </span>
                 </button>
               ))
             ) : (
@@ -882,22 +932,40 @@ function SessaoForm() {
                 <button
                   key={apoio.id}
                   onClick={() => {
-                    setSessao({
-                      ...sessao,
-                      apoio_id: apoio.id,
-                      apoio_nome: apoio.nome,
-                      apoio_situacao: apoio.status,
-                    } as ISessao);
-                    setSessaoModified(true);
-                    setIsApoioDialogOpen(false);
+                    if (!apoio.is_available) {
+                      // Apoio em atendimento - abrir modal de confirmação
+                      setApoioSelecionado(apoio);
+                      setIsConfirmApoioDialogOpen(true);
+                    } else {
+                      // Apoio disponível - atribuir diretamente
+                      setSessao({
+                        ...sessao,
+                        apoio_id: apoio.id,
+                        apoio_nome: apoio.nome,
+                        apoio_situacao: apoio.status,
+                      } as ISessao);
+                      setSessaoModified(true);
+                      setIsApoioDialogOpen(false);
+                    }
                   }}
-                  className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
+                  className={`p-3 rounded-lg border text-sm font-medium transition-all text-left flex flex-col items-start gap-0.5 ${
                     sessao?.apoio_id === apoio.id
                       ? "bg-blue-500 border-blue-500 text-white"
                       : "bg-white border-gray-300 text-neutral-600 hover:border-gray-400"
                   }`}
                 >
-                  {apoio.nome}
+                  <span>{apoio.nome}</span>
+                  <span
+                    className={`text-xs font-normal ${
+                      sessao?.apoio_id === apoio.id
+                        ? "text-blue-100"
+                        : apoio.is_available
+                          ? "text-green-600"
+                          : "text-amber-600"
+                    }`}
+                  >
+                    {apoio.is_available ? "Disponível" : "Em atendimento"}
+                  </span>
                 </button>
               ))
             ) : (
@@ -993,6 +1061,110 @@ function SessaoForm() {
           >
             Limpar
           </button>
+        </div>
+      </BottomDialog>
+
+      {/* Modal de confirmação para profissional em atendimento */}
+      <BottomDialog
+        isOpen={isConfirmProfissionalDialogOpen}
+        onClose={() => {
+          setIsConfirmProfissionalDialogOpen(false);
+          setProfissionalSelecionado(null);
+        }}
+        title="Confirmar Seleção"
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-neutral-700">
+              O profissional <span className="font-semibold">{profissionalSelecionado?.nome}</span> está
+              em atendimento no momento.
+            </p>
+            <p className="text-sm text-neutral-600">
+              Deseja mesmo atribuir este profissional à sessão?
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setIsConfirmProfissionalDialogOpen(false);
+                setProfissionalSelecionado(null);
+              }}
+              className="flex-1 p-3 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => {
+                if (profissionalSelecionado) {
+                  setSessao({
+                    ...sessao,
+                    profissional_id: profissionalSelecionado.id,
+                    profissional_nome: profissionalSelecionado.nome,
+                    profissional_situacao: profissionalSelecionado.status,
+                  } as ISessao);
+                  setSessaoModified(true);
+                  setIsConfirmProfissionalDialogOpen(false);
+                  setIsProfissionalDialogOpen(false);
+                  setProfissionalSelecionado(null);
+                }
+              }}
+              className="flex-1 p-3 rounded-lg border border-blue-500 bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition-all"
+            >
+              Confirmar
+            </button>
+          </div>
+        </div>
+      </BottomDialog>
+
+      {/* Modal de confirmação para apoio em atendimento */}
+      <BottomDialog
+        isOpen={isConfirmApoioDialogOpen}
+        onClose={() => {
+          setIsConfirmApoioDialogOpen(false);
+          setApoioSelecionado(null);
+        }}
+        title="Confirmar Seleção"
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-neutral-700">
+              O profissional de apoio <span className="font-semibold">{apoioSelecionado?.nome}</span> está
+              em atendimento no momento.
+            </p>
+            <p className="text-sm text-neutral-600">
+              Deseja mesmo atribuir este profissional de apoio à sessão?
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setIsConfirmApoioDialogOpen(false);
+                setApoioSelecionado(null);
+              }}
+              className="flex-1 p-3 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => {
+                if (apoioSelecionado) {
+                  setSessao({
+                    ...sessao,
+                    apoio_id: apoioSelecionado.id,
+                    apoio_nome: apoioSelecionado.nome,
+                    apoio_situacao: apoioSelecionado.status,
+                  } as ISessao);
+                  setSessaoModified(true);
+                  setIsConfirmApoioDialogOpen(false);
+                  setIsApoioDialogOpen(false);
+                  setApoioSelecionado(null);
+                }
+              }}
+              className="flex-1 p-3 rounded-lg border border-blue-500 bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition-all"
+            >
+              Confirmar
+            </button>
+          </div>
         </div>
       </BottomDialog>
     </div>

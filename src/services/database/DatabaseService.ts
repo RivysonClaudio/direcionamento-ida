@@ -1204,6 +1204,44 @@ class DatabaseService {
       throw error;
     }
   }
+
+  async get_profissionais_disponiveis_v2(
+    date: string,
+    session_time: string,
+    patient_id: string | null,
+    searchTerm: string = ""
+  ): Promise<
+    (Omit<IProfissional, "role" | "observacoes"> & { is_available: boolean })[]
+  > {
+    const appTurno = localStorage.getItem("app_turno");
+
+    const { data, error } = await this.supabase.rpc(
+      "get_therapy_available_professionals_v3",
+      {
+        p_date: date,
+        p_session_time: session_time,
+        p_shift: appTurno,
+        p_patient_id: patient_id,
+        p_search_name: searchTerm,
+      }
+    );
+
+    if (error) {
+      throw new Error(
+        `Error fetching profissionais disponíveis: ${error.message}`
+      );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return data.map((item: any) => ({
+      id: item.id,
+      status: item.status,
+      nome: item.name,
+      turno: item.shift,
+      funcao: item.function,
+      is_available: item.is_available ?? false,
+    }));
+  }
 }
 
 export default DatabaseService;

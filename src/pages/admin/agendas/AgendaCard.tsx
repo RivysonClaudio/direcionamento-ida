@@ -53,7 +53,7 @@ function AgendaCard({
 
         <div className="flex items-center justify-between text-xs text-neutral-600">
           {agenda.sala === 0 ? (
-            <span>Externa</span>
+            <span>Em Ambiente Externo</span>
           ) : agenda.sala ? (
             <span>Sala {agenda.sala}</span>
           ) : (

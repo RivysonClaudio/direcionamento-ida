@@ -5,6 +5,7 @@ import type { IAgenda } from "../../pages/admin/agendas/IAgenda";
 import type { ISessao } from "../../pages/admin/sessoes/ISessao";
 import type { IMedAgenda } from "../../pages/admin/medtherapy/IMedAgenda";
 import type { IOcorrencia } from "../../pages/admin/ocorrencias/IOcorrencia";
+import Util from "../../util/util";
 
 class DatabaseService {
   private static instance: DatabaseService;
@@ -410,7 +411,7 @@ class DatabaseService {
       query = query.gt("session_time", "12:00");
     }
 
-    const result = await query.order("patient_name", { ascending: true })
+    const result = await query.in("date", [Util.iso_date(-1), Util.iso_date(0), Util.iso_date(1)]).order("patient_name", { ascending: true })
 
     if (result.error) {
       throw new Error(
@@ -421,6 +422,7 @@ class DatabaseService {
     // Group by date, session_time, room and collect names
     const grouped = result.data.reduce((acc, item) => {
       const key = `${item.date}-${item.session_time}-${item.room}`;
+      console.log(key);
       if (!acc[key]) {
         acc[key] = {
           date: item.date,

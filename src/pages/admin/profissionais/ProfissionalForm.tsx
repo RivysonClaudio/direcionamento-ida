@@ -250,7 +250,17 @@ function ProfissionalForm() {
             <label className="text-sm font-medium text-neutral-600">
               Resumo da Agenda
             </label>
-            <div className="p-2 bg-gray-50 rounded-lg border border-gray-300">
+            <div
+              onClick={() => {
+                if (profissional?.id == null || profissional.id === "")
+                  return mostrarNotificacao(
+                    "É necessário salvar o profissional antes de acessar a agenda.",
+                    "error"
+                  );
+                navigate(`/admin/profissionais/${profissional?.id}/agenda`);
+              }}
+              className="cursor-pointer p-2 bg-gray-50 rounded-lg border border-gray-300 hover:border-gray-400 transition-colors"
+            >
               <ul className="grid grid-cols-5 gap-1 text-center text-xs">
                 {dias_da_semana.map((dia, index) => (
                   <li

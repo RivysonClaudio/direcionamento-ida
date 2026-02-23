@@ -395,8 +395,13 @@ function AgendaForm() {
             </label>
             <button
               type="button"
-              onClick={() => setIsAssistidoDialogOpen(true)}
-              className="p-2.5 rounded-lg border border-gray-300 bg-white text-neutral-700 outline-none hover:border-gray-400 transition-colors text-left"
+              onClick={() => !isFromProfissionais && setIsAssistidoDialogOpen(true)}
+              disabled={!isFromProfissionais}
+              className={`p-2.5 rounded-lg border border-gray-300 text-neutral-700 outline-none transition-colors text-left ${
+                !isFromProfissionais
+                  ? "bg-gray-100 cursor-not-allowed"
+                  : "bg-white hover:border-gray-400"
+              }`}
             >
               {agenda?.assistido || "Selecione o assistido..."}
             </button>
@@ -408,8 +413,13 @@ function AgendaForm() {
             </label>
             <button
               type="button"
-              onClick={() => setIsProfissionalDialogOpen(true)}
-              className="p-2.5 rounded-lg border border-gray-300 bg-white text-neutral-700 outline-none hover:border-gray-400 transition-colors text-left"
+              onClick={() => !isFromProfissionais && setIsProfissionalDialogOpen(true)}
+              disabled={isFromProfissionais}
+              className={`p-2.5 rounded-lg border border-gray-300 text-neutral-700 outline-none transition-colors text-left ${
+                isFromProfissionais
+                  ? "bg-gray-100 cursor-not-allowed"
+                  : "bg-white hover:border-gray-400"
+              }`}
             >
               {agenda?.profissional || "Selecione um profissional..."}
             </button>

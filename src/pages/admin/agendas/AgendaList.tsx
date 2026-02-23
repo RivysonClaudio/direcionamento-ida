@@ -1,8 +1,9 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import DatabaseService from "../../../services/database/DatabaseService.ts";
 import { useState, useEffect } from "react";
 import type { IAgenda } from "./IAgenda.tsx";
 import type { IAssistido } from "../assistidos/IAssistido.tsx";
+import type { IProfissional } from "../profissionais/IProfissional.tsx";
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
 import AgendaCard from "./AgendaCard.tsx";
 import Util from "../../../util/util.tsx";
@@ -12,8 +13,13 @@ import { mostrarNotificacao } from "../../../util/notificacao.ts";
 function AgendaList() {
   const { id } = useParams<{ id: string; agendaId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const database = DatabaseService.getInstance();
+  
+  const isProfissional = location.pathname.includes("/profissionais/");
+  
   const [assistido, setAssistido] = useState<IAssistido | null>(null);
+  const [profissional, setProfissional] = useState<IProfissional | null>(null);
   const [day, setDay] = useState<number>(() => {
     const savedDay = localStorage.getItem("agenda_selectedDay");
     return savedDay ? parseInt(savedDay) : 2;
@@ -27,16 +33,28 @@ function AgendaList() {
       return;
     }
 
-    database
-      .get_assistido_by_id(id!)
-      .then((data) => setAssistido(data))
-      .catch((err) => console.error(err));
+    if (isProfissional) {
+      database
+        .get_profissional_by_id(id!)
+        .then((data) => setProfissional(data))
+        .catch((err) => console.error(err));
 
-    database
-      .get_agenda_by_id("patient_id", id!)
-      .then((data) => setAgendas(data))
-      .catch((err) => console.error(err));
-  }, [id]);
+      database
+        .get_agenda_by_id("professional_id", id!)
+        .then((data) => setAgendas(data))
+        .catch((err) => console.error(err));
+    } else {
+      database
+        .get_assistido_by_id(id!)
+        .then((data) => setAssistido(data))
+        .catch((err) => console.error(err));
+
+      database
+        .get_agenda_by_id("patient_id", id!)
+        .then((data) => setAgendas(data))
+        .catch((err) => console.error(err));
+    }
+  }, [id, isProfissional]);
 
   function change_day(to: "next" | "prev") {
     let new_day = to === "next" ? day + 1 : day - 1;
@@ -67,11 +85,13 @@ function AgendaList() {
     setIsOptionsDialogOpen(false);
   }
 
+  const basePath = isProfissional ? "/admin/profissionais" : "/admin/assistidos";
+
   return (
     <div className="relative flex flex-col gap-3 h-full p-4 box-border">
       <div className="relative py-2 flex items-center justify-center">
         <button
-          onClick={() => navigate("/admin/assistidos/" + id)}
+          onClick={() => navigate(`${basePath}/${id}`)}
           className="absolute top-0 left-0 p-2 text-neutral-600 hover:text-neutral-800 transition-colors"
           title="Voltar"
         >
@@ -81,7 +101,7 @@ function AgendaList() {
           <h2 className="text-xl font-bold text-neutral-800">Agenda Semanal</h2>
         </div>
         <button
-          onClick={() => navigate(`/admin/assistidos/${id}/agenda/nova`)}
+          onClick={() => navigate(`${basePath}/${id}/agenda/nova`)}
           className="absolute top-0 right-0 p-2 text-neutral-600 hover:text-green-600 transition-colors"
           title="Nova Agenda"
         >
@@ -92,15 +112,22 @@ function AgendaList() {
       <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-gray-200 shadow-sm">
         <div className="flex-1">
           <h2 className="text-base font-semibold text-neutral-800">
-            {assistido && assistido.nome}
+            {isProfissional ? profissional?.nome : assistido?.nome}
           </h2>
           <div className="flex items-center gap-3 text-xs text-neutral-500 mt-1">
-            <span>{assistido && assistido.nivel_suporte}</span>
-            <span>•</span>
-            <span>
-              {assistido &&
-                (assistido.precisa_apoio ? "Com apoio" : "Sem apoio")}
-            </span>
+            {isProfissional ? (
+              <>
+                <span>{profissional?.funcao}</span>
+                <span>•</span>
+                <span>{profissional?.turno}</span>
+              </>
+            ) : (
+              <>
+                <span>{assistido?.nivel_suporte}</span>
+                <span>•</span>
+                <span>{assistido?.precisa_apoio ? "Com apoio" : "Sem apoio"}</span>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -130,7 +157,7 @@ function AgendaList() {
               key={index}
               agenda={agenda}
               onClick={() =>
-                navigate(`/admin/assistidos/${id}/agenda/${agenda.id}`)
+                navigate(`${basePath}/${id}/agenda/${agenda.id}`)
               }
               onLongPress={() => handleLongPress(agenda)}
             />

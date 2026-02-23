@@ -184,7 +184,7 @@ function OcorrenciaForm() {
     <div className="flex flex-col gap-4 h-full p-4 bg-(--yellow)">
       <div className="relative py-2 flex items-center justify-center">
         <button
-          onClick={() => navigate("/admin/ocorrencias")}
+          onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/admin/ocorrencias")}
           className="absolute top-0 left-0 p-2 text-neutral-600 hover:text-neutral-800 transition-colors"
           title="Voltar"
         >

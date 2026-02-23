@@ -311,10 +311,14 @@ function AgendaForm() {
       <div className="relative py-2 flex items-center justify-center">
         <button
           onClick={() => {
-            const baseRoute = isFromProfissionais
-              ? "/admin/profissionais"
-              : "/admin/assistidos";
-            navigate(`${baseRoute}/${id}/agenda`);
+            if (window.history.length > 1) {
+              navigate(-1);
+            } else {
+              const baseRoute = isFromProfissionais
+                ? "/admin/profissionais"
+                : "/admin/assistidos";
+              navigate(`${baseRoute}/${id}/agenda`);
+            }
           }}
           className="absolute top-0 left-0 p-2 text-neutral-600 hover:text-neutral-800 transition-colors"
           title="Voltar"

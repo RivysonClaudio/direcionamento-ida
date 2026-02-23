@@ -142,7 +142,7 @@ function SessoesList() {
     <div className="flex flex-col gap-3 h-full p-4 bg-(--blue)">
       <div className="relative py-2 flex items-center justify-center">
         <button
-          onClick={() => navigate(`/member/${getMemberId()}/agenda`)}
+          onClick={() => window.history.length > 1 ? navigate(-1) : navigate(`/member/${getMemberId()}/agenda`)}
           className="absolute top-0 left-0 p-2 text-neutral-600 hover:text-neutral-800 transition-colors"
           title="Voltar"
         >

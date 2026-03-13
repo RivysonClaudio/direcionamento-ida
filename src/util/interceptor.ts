@@ -26,6 +26,12 @@ window.fetch = async function (...args) {
       setLoadingGlobal(false);
     }
 
+    // Para requisições de autenticação, não mexe no body da resposta
+    // para não interferir no fluxo do Supabase (evita erro de body já lido)
+    if (isAuthRequest) {
+      return response;
+    }
+
     if (!response.ok) {
       const errorResponse: ErrorResponseDTO = await response.json();
 

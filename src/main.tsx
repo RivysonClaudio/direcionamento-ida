@@ -37,7 +37,10 @@ supabase.auth.onAuthStateChange((event) => {
     localStorage.removeItem("userId");
     localStorage.removeItem("userRole");
     // Supabase gerencia a limpeza da sessão automaticamente
-    window.location.href = "/login";
+    // Evita recarregar a página se o usuário já estiver na tela de login
+    if (window.location.pathname !== "/login") {
+      window.location.href = "/login";
+    }
   }
 });
 

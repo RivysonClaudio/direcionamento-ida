@@ -77,9 +77,17 @@ function Login() {
           navigate(`/member/${userInfo.id}/agenda`);
         }
       }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Erro ao fazer login.";
+    } catch (err: unknown) {
+      // Supabase retorna objetos de erro com um `code`, ex: { code: "invalid_credentials", message: "Invalid login credentials" }
+      const anyErr = err as { code?: string; message?: string };
+
+      let errorMessage =
+        anyErr?.message || (err instanceof Error ? err.message : "Erro ao fazer login.");
+
+      if (anyErr?.code === "invalid_credentials") {
+        errorMessage = "Email ou senha inválidos.";
+      }
+
       setError(errorMessage);
       mostrarNotificacao("Erro ao fazer login. " + errorMessage, "error");
     } finally {

@@ -32,6 +32,27 @@ function Login() {
       const data = await database.sign_in(email, password);
 
       if (data.session) {
+        const userInfo = await database.get_profissional_by_userid(
+          data.session.user.id
+        );
+
+        if (!userInfo) {
+          await database.sign_out();
+          const message = "Usuário não encontrado.";
+          setError(message);
+          mostrarNotificacao(message, "error");
+          return;
+        }
+
+        if (userInfo.status !== "ATIVO") {
+          await database.sign_out();
+          const message =
+            "Seu usuário está inativo. Entre em contato com o administrador.";
+          setError(message);
+          mostrarNotificacao(message, "error");
+          return;
+        }
+
         // Salvar credenciais se "lembrar de mim" estiver marcado
         if (rememberMe) {
           localStorage.setItem("rememberedEmail", email);
@@ -43,23 +64,17 @@ function Login() {
           localStorage.removeItem("rememberMe");
         }
 
-        const userInfo = await database.get_profissional_by_userid(
-          data.session.user.id
-        );
+        localStorage.setItem("user", userInfo.nome);
+        localStorage.setItem("userId", userInfo.id);
+        localStorage.setItem("userRole", userInfo.role);
+        localStorage.setItem("user_info", JSON.stringify(userInfo));
+        localStorage.setItem("app_turno", userInfo.turno);
 
-        if (userInfo) {
-          localStorage.setItem("user", userInfo.nome);
-          localStorage.setItem("userId", userInfo.id);
-          localStorage.setItem("userRole", userInfo.role);
-          localStorage.setItem("user_info", JSON.stringify(userInfo));
-          localStorage.setItem("app_turno", userInfo.turno);
-
-          if (userInfo?.role == "ADMIN") {
-            navigate("/admin");
-          }
-          if (userInfo?.role == "MEMBER") {
-            navigate(`/member/${userInfo.id}/agenda`);
-          }
+        if (userInfo.role === "ADMIN") {
+          navigate("/admin");
+        }
+        if (userInfo.role === "MEMBER") {
+          navigate(`/member/${userInfo.id}/agenda`);
         }
       }
     } catch (err) {
